@@ -116,6 +116,8 @@ the hook does nothing. Never `rtk init -g` as well, or commands are rewritten tw
 
 ## Skills
 
-Steps live in `.claude/skills/` (`/issue`, `/branch`, `/commit`, `/pr`, `/verify`, `/dev`,
-`/gemma`); the rules live here, so a rule changes in one place. `AGENTS.md` and
-`.agents/skills` are symlinks to this file and those skills, for agents other than Claude.
+Steps live in `.claude/skills/`: `/issue`, `/branch`, `/commit`, `/pr`, `/verify`, `/dev`,
+`/gemma`, and `/develop <n>`, which works one issue end to end through `/branch` →
+`/verify` → `/commit` → `/pr`, each commit and PR behind a yes. The rules live here, so a
+rule changes in one place. `AGENTS.md` and `.agents/skills` are symlinks to this file and
+those skills, for agents other than Claude.
