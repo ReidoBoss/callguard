@@ -9,8 +9,8 @@ node_modules
 .env.*
 !.env.example
 
-# Call recordings stay on the machine, never in git. Demo fixtures are
-# transcripts under web/server/fixtures/.
+# Call recordings stay on the machine, never in git. Demo calls are
+# transcripts under demo/.
 *.wav
 *.mp3
 *.m4a

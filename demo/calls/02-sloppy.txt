@@ -1,0 +1,24 @@
+CALL: 02-sloppy
+AGENT: Jomar
+CALLER: Derek Simmons
+DURATION: 02:05
+
+[00:00] AGENT: Good afternoon, Harbor Bay Credit Union, this is Jomar speaking. How may I help you?
+[00:05] CALLER: Yeah, hi, my card got declined at the gas station this morning and I don't know why.
+[00:12] AGENT: Okay sir, let me check that for you. What's the name on the account?
+[00:16] CALLER: Derek Simmons.
+[00:18] AGENT: Okay, one moment.
+[00:24] CALLER: I've got plenty of money in there, so I don't get it.
+[00:31] AGENT: Okay Mr. Simmons, I can see your account. Your current balance is two thousand four hundred and ten dollars, and your available credit is eight hundred and fifty. The decline this morning was flagged by our fraud system because it was a pump at a station in a different state.
+[00:46] CALLER: Yeah, I'm on a road trip.
+[00:49] AGENT: Okay, I see. So you're saying the card was declined at the gas station, correct?
+[00:53] CALLER: Yes.
+[00:55] AGENT: I've removed the fraud flag, so it should work now.
+[00:59] CALLER: Will it happen again in the next state?
+[01:02] AGENT: It might, sir.
+[01:04] CALLER: Can you do something about that?
+[01:06] AGENT: You can add a travel notice in the app, then it won't flag the stations on your route.
+[01:09] CALLER: Okay, fine.
+[01:11] AGENT: Is there anything else I can help you with?
+[01:13] CALLER: No.
+[01:14] AGENT: Thank you for calling Harbor Bay Credit Union. Have a nice day.

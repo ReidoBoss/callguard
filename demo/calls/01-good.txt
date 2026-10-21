@@ -1,0 +1,26 @@
+CALL: 01-good
+AGENT: Mae
+CALLER: Linda Carver
+DURATION: 03:10
+
+[00:00] AGENT: Thank you for calling Harbor Bay Credit Union card services, my name is Mae. Just so you know, this call is recorded for quality and training purposes. How can I help you today?
+[00:09] CALLER: Hi Mae. I'm looking at my statement and there's a charge I don't recognize, something called "PXL Digital" for forty-nine ninety-nine.
+[00:18] AGENT: I'm sorry to hear that, I'll definitely look into it with you. Before I open the account, can I have your full name, please?
+[00:24] CALLER: Linda Carver.
+[00:26] AGENT: Thank you, Ms. Carver. And can you confirm your date of birth and the last four digits of the card?
+[00:31] CALLER: March fourth, 1971. Last four are 1182.
+[00:37] AGENT: Thank you, you're verified. So to make sure I have it right, you're seeing a charge of forty-nine ninety-nine from PXL Digital that you didn't make, is that correct?
+[00:46] CALLER: That's right. It posted on the twelfth.
+[00:50] AGENT: I see it here, posted October twelfth. Do you have any subscriptions, maybe a photo app or cloud storage, that might bill under a different name?
+[00:58] CALLER: No, nothing like that. I've never heard of them.
+[01:03] AGENT: Understood. In that case I'll file a dispute for that charge. While the dispute is open you won't be responsible for that amount, and a provisional credit usually shows within two business days.
+[01:15] CALLER: Okay, good. Should I be worried about the card?
+[01:19] AGENT: Since you don't recognize the merchant, I'd recommend we block this card and send you a new one, to be safe. The new card arrives in five to seven business days. Would you like me to do that?
+[01:29] CALLER: Yes, please.
+[01:31] AGENT: Done, the card ending in 1182 is now blocked and a replacement is on its way to the address on file. Any automatic payments on the old card will need to be updated once the new one arrives.
+[01:43] CALLER: Got it.
+[01:45] AGENT: So to recap: I've opened a dispute for the forty-nine ninety-nine charge from PXL Digital, you'll see a provisional credit within two business days, your old card is blocked, and the new one arrives in five to seven business days. You'll also get an email with the dispute reference number.
+[02:02] CALLER: Perfect, thank you.
+[02:04] AGENT: Is there anything else I can help you with today?
+[02:07] CALLER: No, that's everything.
+[02:09] AGENT: Thank you for calling Harbor Bay, Ms. Carver. Have a great rest of your day.

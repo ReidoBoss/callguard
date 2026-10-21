@@ -1,0 +1,29 @@
+CALL: 03-risky
+AGENT: Kevin
+CALLER: Patricia Nguyen
+DURATION: 02:40
+
+[00:00] AGENT: Thank you for calling Harbor Bay Credit Union, my name is Kevin. This call may be recorded for quality purposes. How can I help you?
+[00:08] CALLER: Hi Kevin. I was charged a thirty-five dollar late fee and I paid on time. I want it taken off.
+[00:15] AGENT: I can help with that. May I have your full name and the ZIP code on the account?
+[00:20] CALLER: Patricia Nguyen, nine four one one zero.
+[00:25] AGENT: And your date of birth, please?
+[00:28] CALLER: July twenty-second, 1988.
+[00:32] AGENT: Thank you, Ms. Nguyen, you're verified. So you were charged a late fee of thirty-five dollars, but you believe your payment was on time, correct?
+[00:40] CALLER: Yes. I paid on the fifteenth. The due date was the fifteenth.
+[00:45] AGENT: Okay. I see a payment posted on the sixteenth.
+[00:49] CALLER: I made it on the fifteenth, I have the confirmation.
+[00:52] AGENT: Ma'am, the system says sixteenth. You probably did it late at night. It happens a lot.
+[00:58] CALLER: I did not do it late. Can you just check the card it was paid from?
+[01:05] AGENT: Sure. Let me read the card back to make sure we're on the same one: four one one one, one one one one, one one one one, one one one one, expiring zero nine twenty-eight. Is that the card?
+[01:20] CALLER: Um, yes, I think so.
+[01:23] AGENT: Okay. And I see your payment was initiated on the fifteenth at 11:58 PM, and it posted the next day.
+[01:31] CALLER: So it was on time.
+[01:34] AGENT: Technically it's when it posts. But okay.
+[01:38] CALLER: This is really frustrating. I've been a member for ten years.
+[01:44] AGENT: I understand, ma'am.
+[01:48] AGENT: Look, I'll just refund the thirty-five dollars and I'll also waive your annual fee for next year, so you're covered.
+[01:56] CALLER: Oh, okay. Thank you, that's nice.
+[01:59] AGENT: So the late fee will be reversed in three to five business days and you won't be charged the annual fee next year.
+[02:06] CALLER: Great.
+[02:08] AGENT: Okay. Bye.
