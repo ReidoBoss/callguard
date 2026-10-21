@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+# Enforces Conventional Commits via commitlint (commitlint.config.js).
+# $1 is the path to the file holding the commit message, passed by git.
+if [ ! -d node_modules/@commitlint ]; then
+  echo "commitlint is not installed. Run 'pnpm install' at the repo root first." >&2
+  exit 1
+fi
+pnpm exec commitlint --edit "$1"

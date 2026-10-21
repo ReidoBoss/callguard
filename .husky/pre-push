@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+# Refuses a branch not named <type>/#<issue-number> (see CLAUDE.md). main and a
+# detached HEAD are exempt.
+branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null) || exit 0
+[ "$branch" = main ] && exit 0
+if ! printf '%s' "$branch" | grep -Eq '^(feature|bugfix|hotfix|docs)/#[0-9]+$'; then
+  echo "Branch '$branch' must be <feature|bugfix|hotfix|docs>/#<issue-number>, e.g. feature/#4." >&2
+  echo "Rename it: git branch -m '<type>/#<n>'" >&2
+  exit 1
+fi
