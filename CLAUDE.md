@@ -14,6 +14,7 @@ asked about first, because it breaks the demo's whole argument.
 | Path | Stack | Notes |
 |---|---|---|
 | `web/` | Nuxt 4, Tailwind 4, shadcn-vue | The whole app. UI in `web/app/`, Nitro server routes in `web/server/api/` call Gemma. Its own pnpm project. Not scaffolded yet, see **Day one** |
+| `demo/` | Plain text | The demo calls, the script checklist and the answer key (#3): what each AI feature should return. The app reads them from here |
 | `web/server/` | Nitro (Nuxt's server) | The only code that talks to Gemma. The browser never calls the endpoint directly |
 | Transcription | Not decided | Gemma 4 audio input if ALMA's endpoint accepts it, otherwise a local whisper.cpp CLI called from a server route, otherwise pasted transcripts. Decide after probing the endpoint (`/gemma`) |
 

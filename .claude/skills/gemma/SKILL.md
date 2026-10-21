@@ -77,4 +77,5 @@ the app exists. Update CLAUDE.md's **Environment** in the same change.
   so the UI can highlight it and a judge can see it isn't invented.
 - **Redact on output too.** A flagged card number is shown masked (`**** 4242`).
 - **temperature 0** for scoring, so the same call scores the same twice on stage.
-- Keep the demo transcripts in `web/server/fixtures/` and run them before the pitch.
+- The demo calls and the answer key are in `demo/` (#3). Run all three against the
+  answer key before the pitch.
