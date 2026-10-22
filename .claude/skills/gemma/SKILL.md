@@ -29,12 +29,23 @@ time curl -s "$GEMMA_BASE_URL/chat/completions" -H 'Content-Type: application/js
 }'
 ```
 
-Then try, and write what worked into CLAUDE.md's Transcription row:
+### Measured 2026-10-22 (#2): `gemma4:e4b`, Ollama 0.40.8, mlx runner, model warm
 
-- `"response_format": {"type": "json_object"}`: does it return bare JSON?
-- an `input_audio` content part with a short base64 WAV: does it transcribe?
-- an `image_url` content part: for screenshots of call scripts.
-- a long transcript (~8k tokens): the context limit, and how slow it gets.
+- **Short prompt**: ~0.4 s, bare `{"ok": true}`.
+- **~8k-token transcript** (four copies of the demo calls): read in full (the start isn't
+  cut), even though `ollama ps` shows a 4096 context. ~17 s with thinking off, 19–29 s
+  with it on.
+- **Thinking is on by default**: hundreds of `reasoning` tokens before the answer.
+  `"reasoning_effort": "none"` turns it off; one demo call took 3.2 s instead of 7.7 s.
+  Untested whether scoring quality holds without it, so the example below leaves it on.
+- **`"response_format": {"type": "json_object"}` fails**: HTTP 501, "structured output is
+  unavailable". Don't send it. Without it, replies come in ```` ```json ```` fences, so keep
+  the fence stripping in `gemmaJson`.
+- **`input_audio` works** (base64 WAV, `"format": "wav"`): a 2:07 call came back word for
+  word in 23 s, but its `[mm:ss]` timestamps were invented (the last line said `[01:04]`).
+  That's why CLAUDE.md's Transcription row picks whisper.cpp (#28) and keeps this as the
+  fallback.
+- Not probed: `image_url` (for screenshots of call scripts), and `gemma4:12b`.
 
 ## Calling it from Nuxt
 
