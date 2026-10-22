@@ -1,11 +1,14 @@
 <script setup lang="ts">
+import { Printer, ShieldCheck } from '@lucide/vue'
+import { Button } from '@/components/ui/button'
+
 const id = useRoute().params.id as string
 
 // Each section loads on its own, so the report fills in as each AI call returns
 const { data: call, error } = await useFetch(`/api/calls/${id}`)
-const { data: score, pending: scorePending } = useLazyFetch(`/api/calls/${id}/score`, { server: false })
-const { data: flagged, pending: flagsPending } = useLazyFetch(`/api/calls/${id}/flags`, { server: false })
-const { data: coaching, pending: coachingPending } = useLazyFetch(`/api/calls/${id}/coaching`, { server: false })
+const { data: score, pending: scorePending, status: scoreStatus } = useLazyFetch(`/api/calls/${id}/score`, { server: false })
+const { data: flagged, pending: flagsPending, status: flagsStatus } = useLazyFetch(`/api/calls/${id}/flags`, { server: false })
+const { data: coaching, pending: coachingPending, status: coachingStatus } = useLazyFetch(`/api/calls/${id}/coaching`, { server: false })
 
 const header = computed(() => {
   const text = call.value?.transcript ?? ''
@@ -37,11 +40,99 @@ const lineId = (time: string) => `line-${time.replace(':', '-')}`
 function scrollToLine(time: string | null) {
   if (time) document.getElementById(lineId(time))?.scrollIntoView({ behavior: 'smooth', block: 'center' })
 }
+
+// `status`, not `pending`: it's `idle` on the server and before the client fetches start, so
+// the button renders disabled on both and hydration keeps it disabled until every section is in
+const reportLoaded = computed(() => [scoreStatus, flagsStatus, coachingStatus].every(status => status.value === 'success' || status.value === 'error'))
+
+function printReport() {
+  window.print()
+}
 </script>
 
 <template>
-  <main class="mx-auto max-w-7xl space-y-6 px-6 py-8">
-    <div class="flex flex-wrap items-start justify-between gap-4">
+  <main class="mx-auto max-w-7xl space-y-6 px-6 py-8 print:p-0">
+    <!-- Print only: a one-page summary for the agent and team lead, no transcript (#19) -->
+    <article v-if="!error" class="hidden space-y-6 text-sm text-black print:block">
+      <header class="flex items-start justify-between gap-4 border-b-2 border-black pb-4">
+        <div>
+          <p class="flex items-center gap-1.5 font-semibold">
+            <ShieldCheck class="size-4" aria-hidden="true" />
+            CallGuard · Call report
+          </p>
+          <h1 class="text-2xl font-bold">
+            Call {{ header.call ?? id }}<template v-if="header.agent"> · {{ header.agent }}</template>
+          </h1>
+          <p v-if="header.caller || header.duration" class="text-neutral-600">
+            <template v-if="header.caller">Caller {{ header.caller }}</template><template v-if="header.caller && header.duration"> · </template>{{ header.duration }}
+          </p>
+        </div>
+        <ClientOnly>
+          <p v-if="call?.createdAt" class="text-neutral-600">
+            Reviewed {{ new Date(call.createdAt).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' }) }}
+          </p>
+        </ClientOnly>
+      </header>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div class="rounded border border-neutral-400 p-3">
+          <p class="text-xs font-semibold text-neutral-600 uppercase">Script score</p>
+          <p class="text-2xl font-bold">
+            <template v-if="score?.reviewed">{{ score.items.filter(item => item.pass).length }} / {{ score.items.length }} · {{ score.overall }}%</template>
+            <template v-else>Not scored</template>
+          </p>
+        </div>
+        <div class="rounded border border-neutral-400 p-3">
+          <p class="text-xs font-semibold text-neutral-600 uppercase">Flags</p>
+          <p class="text-2xl font-bold">{{ flagged?.reviewed ? flagged.flags.length : 'Not checked' }}</p>
+        </div>
+      </div>
+
+      <section class="break-inside-avoid">
+        <h2 class="mb-2 font-bold">Compliance flags</h2>
+        <table v-if="flagged?.flags.length" class="w-full border-t border-neutral-300">
+          <tbody>
+            <tr v-for="flag in flagged.flags" :key="flag.line + flag.rule" class="border-b border-neutral-300 align-top">
+              <td class="py-2 pr-3 font-bold uppercase">{{ flag.severity }}</td>
+              <td class="py-2 pr-3 font-mono">{{ flag.line }}</td>
+              <td class="py-2">
+                {{ flag.rule.replaceAll('_', ' ') }}
+                <span class="block text-neutral-600">“{{ maskCardNumbers(flag.quote) }}”</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p v-else>No compliance flags.</p>
+      </section>
+
+      <section v-if="score?.reviewed" class="break-inside-avoid">
+        <h2 class="mb-2 font-bold">Script checklist</h2>
+        <ul class="grid grid-cols-2 gap-x-6 gap-y-1">
+          <li v-for="item in score.items" :key="item.id" :class="{ 'font-bold': !item.pass }">
+            {{ item.pass ? 'PASS' : 'FAIL' }} · {{ item.label }}<span v-if="item.line" class="ml-1.5 font-mono text-neutral-600">{{ item.line }}</span>
+          </li>
+        </ul>
+      </section>
+
+      <section class="break-inside-avoid">
+        <h2 class="mb-2 font-bold">Coaching notes</h2>
+        <ol v-if="coaching?.reviewed" class="list-decimal space-y-1 pl-5">
+          <li v-for="(note, index) in coaching.notes" :key="index">
+            <span v-if="note.line" class="font-mono font-bold">{{ note.line }}: </span>{{ maskCardNumbers(note.text) }}
+          </li>
+        </ol>
+        <p v-else>No coaching notes yet.</p>
+      </section>
+
+      <div class="grid break-inside-avoid grid-cols-2 gap-8 pt-12">
+        <p class="border-t border-black pt-1">Agent signature</p>
+        <p class="border-t border-black pt-1">Team lead signature</p>
+      </div>
+
+      <p class="text-xs text-neutral-600">Processed on our own Gemma server. No call data left our hardware.</p>
+    </article>
+
+    <div class="flex flex-wrap items-start justify-between gap-4 print:hidden">
       <div>
         <h1 class="text-2xl font-semibold">
           Call report<span v-if="header.call" class="text-muted-foreground font-mono font-normal"> · {{ header.call }}</span>
@@ -50,19 +141,25 @@ function scrollToLine(time: string | null) {
           Agent {{ header.agent }}<template v-if="header.caller"> · Caller {{ header.caller }}</template><template v-if="header.duration"> · {{ header.duration }}</template>
         </p>
       </div>
-      <p class="inline-flex items-center gap-2 rounded-full border border-emerald-600 bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">
-        <span class="size-2 rounded-full bg-emerald-600" aria-hidden="true" />
-        Processed on our own Gemma server, no call data left our hardware
-      </p>
+      <div class="flex flex-wrap items-center gap-3">
+        <p class="inline-flex items-center gap-2 rounded-full border border-emerald-600 bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">
+          <span class="size-2 rounded-full bg-emerald-600" aria-hidden="true" />
+          Processed on our own Gemma server, no call data left our hardware
+        </p>
+        <Button v-if="!error" variant="outline" :disabled="!reportLoaded" @click="printReport">
+          <Printer aria-hidden="true" />
+          Print / Save as PDF
+        </Button>
+      </div>
     </div>
 
-    <p v-if="error" class="text-destructive" role="alert">
+    <p v-if="error" class="text-destructive print:hidden" role="alert">
       This call isn't here. Calls are kept in memory, so a server restart clears them.
       <NuxtLink to="/" class="underline">Review it again</NuxtLink>
     </p>
 
     <!-- Score and coaching share the left column, so the transcript keeps its width beside the sidebar at 1280px -->
-    <div v-else class="grid items-start gap-6 lg:grid-cols-[18rem_1fr]">
+    <div v-else class="grid items-start gap-6 lg:grid-cols-[18rem_1fr] print:hidden">
       <div class="space-y-6">
         <section class="space-y-3 rounded-lg border p-4" aria-labelledby="score-heading">
           <h2 id="score-heading" class="font-medium">Score</h2>

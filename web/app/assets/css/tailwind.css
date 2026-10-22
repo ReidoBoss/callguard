@@ -122,3 +122,8 @@
     @apply font-sans;
     }
 }
+
+/* The printed call report (#19): the browser's paper size, A4 or Letter, with room to sign */
+@page {
+  margin: 15mm;
+}

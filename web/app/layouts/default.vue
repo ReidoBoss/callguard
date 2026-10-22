@@ -24,7 +24,7 @@ function isActive(to: string) {
 <template>
   <div class="flex min-h-screen">
     <!-- `dark` gives the sidebar the dark theme tokens whatever the page uses -->
-    <aside class="dark bg-sidebar text-sidebar-foreground sticky top-0 flex h-screen w-72 shrink-0 flex-col gap-6 p-4">
+    <aside class="dark bg-sidebar text-sidebar-foreground sticky top-0 flex h-screen w-72 shrink-0 flex-col gap-6 p-4 print:hidden">
       <header class="space-y-3 px-2 pt-2">
         <NuxtLink to="/" class="flex items-center gap-2 text-xl font-semibold">
           <ShieldCheck class="size-6 text-blue-400" aria-hidden="true" />
