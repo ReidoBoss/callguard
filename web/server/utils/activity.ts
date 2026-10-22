@@ -1,4 +1,4 @@
-export type Purpose = 'score' | 'flags' | 'coaching' | 'transcribe'
+export type Purpose = 'score' | 'flags' | 'coaching' | 'transcribe' | 'speakers'
 
 // Metadata only: never the transcript, a request body, or a URL's path or query
 export interface Activity {

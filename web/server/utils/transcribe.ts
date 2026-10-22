@@ -27,7 +27,7 @@ export async function transcribeChunk(dir: string, chunk: Chunk): Promise<Segmen
 }
 
 // Transcribes each chunk in order and stitches the lines (see stitchSegments).
-// Speakers are UNKNOWN until #27 labels them.
+// Speakers are UNKNOWN here; the review screen labels them with /api/speakers (#27).
 export async function transcribeChunks(dir: string, chunks: Chunk[]) {
   const segments: Segment[] = []
   for (const chunk of chunks) {
