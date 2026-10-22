@@ -18,7 +18,9 @@ https://call.budddy.app.
   each line AGENT, CALLER or UNKNOWN, and the QA lead fixes any word or speaker before review.
 - **Score it.** Gemma checks the call against the script checklist (`demo/checklist.md`), pass
   or fail per item, each with the line that proves it.
-- **Flag risks.** Each compliance flag is tied to its transcript line, high severity first. The
+- **Flag risks.** Gemma checks the call against the compliance rules, such as a full card
+  number read aloud or account details shared before verifying the caller. Each flag cites
+  its transcript line, high severity first, card numbers masked. The
   QA lead confirms or dismisses each one, with an optional note, and has the final say.
 - **Coach.** Gemma drafts up to three coaching notes, one of praise and then the top two
   fixes, each tied to a line from the call.
@@ -112,8 +114,6 @@ agreement (issues, branches, commits, PRs).
 
 ## Not done yet
 
-- **Compliance flags** come from the demo answer key (`demo/`), so only the three demo calls
-  get flags. Gemma flagging is #5.
 - **Recordings on the live site** stop at the transcribe step: the server there has no
   whisper.cpp yet (#63). Upload transcripts there, or recordings on the demo laptop.
 
@@ -121,7 +121,7 @@ agreement (issues, branches, commits, PRs).
 
 | Who | Built |
 |---|---|
-| Stephen Sagarino Jr. ([@ReidoBoss](https://github.com/ReidoBoss)) | Repo scaffold and tooling, demo calls and answer key, Gemma on the Mac mini, deploy to call.budddy.app, printable report, Gemma scoring and coaching notes, speaker labels |
+| Stephen Sagarino Jr. ([@ReidoBoss](https://github.com/ReidoBoss)) | Repo scaffold and tooling, demo calls and answer key, Gemma on the Mac mini, deploy to call.budddy.app, printable report, Gemma scoring, compliance flags and coaching notes, speaker labels |
 | Daryllson Jumaoas ([@22104323](https://github.com/22104323)) | Review page, call report, team view, Privacy page, confirming and dismissing flags, transcription progress and transcript fixing, coloring a line by its worst flag |
 | John Ron Vincent M. Bacalla ([@johnRonBacalla](https://github.com/johnRonBacalla)) | App shell, recording splitting, whisper.cpp transcription, batch review, flag decisions on the Calls list and team view |
 | Angel Khyla Aboloc ([@akmia](https://github.com/akmia)) | Saving and listing reviewed calls |
