@@ -1,5 +1,5 @@
-// Shortcut: the report's data, hand-copied from demo/checklist.md's answer key until
-// #4 (score), #5 (flags) and #6 (coaching) return the same shapes from Gemma
+// Shortcut: the report's flags and coaching, hand-copied from demo/checklist.md's answer key
+// until #5 (flags) and #6 (coaching) return the same shapes from Gemma
 import type { CallReviewRecord } from '#shared/calls'
 
 export type Severity = 'high' | 'medium' | 'low'
@@ -20,24 +20,8 @@ export interface CoachingResult {
   notes: { text: string, line: string | null }[]
 }
 
-const labels: Record<string, string> = {
-  greeting: 'Greeting',
-  disclosure: 'Recording disclosure',
-  verify: 'Identity verification',
-  purpose: 'Purpose confirmed',
-  recap: 'Resolution recap',
-  closing: 'Closing',
-}
-
-function score(lines: Record<string, string | null>): ScoreResult {
-  const items = Object.entries(lines).map(([id, line]) => ({ id, label: labels[id] ?? id, pass: line !== null, line }))
-  const overall = Math.round(100 * items.filter(item => item.pass).length / items.length)
-  return { reviewed: true, overall, items }
-}
-
-const answerKey: Record<string, { score: ScoreResult, flags: FlagsResult, coaching: CoachingResult }> = {
+const answerKey: Record<string, { flags: FlagsResult, coaching: CoachingResult }> = {
   '01-good': {
-    score: score({ greeting: '00:00', disclosure: '00:00', verify: '00:26', purpose: '00:37', recap: '01:45', closing: '02:04' }),
     flags: { reviewed: true, flags: [] },
     coaching: {
       reviewed: true,
@@ -48,7 +32,6 @@ const answerKey: Record<string, { score: ScoreResult, flags: FlagsResult, coachi
     },
   },
   '02-sloppy': {
-    score: score({ greeting: '00:00', disclosure: null, verify: null, purpose: '00:49', recap: null, closing: '01:11' }),
     flags: {
       reviewed: true,
       flags: [
@@ -66,7 +49,6 @@ const answerKey: Record<string, { score: ScoreResult, flags: FlagsResult, coachi
     },
   },
   '03-risky': {
-    score: score({ greeting: '00:00', disclosure: '00:00', verify: '00:32', purpose: '00:32', recap: '01:59', closing: null }),
     flags: {
       reviewed: true,
       flags: [
