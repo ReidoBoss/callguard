@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { clock, stitchSegments } from '#shared/transcript'
-import type { Segment } from '#shared/transcript'
+import type { Segment, Speaker } from '#shared/transcript'
 
 // Uploads a recording, shows each step while it's transcribed on our own hardware, then lets
 // the QA lead fix speakers and words before the normal review (#29)
@@ -8,13 +8,13 @@ const props = defineProps<{ file: File }>()
 const emit = defineEmits<{ cancel: [] }>()
 
 type Step = 'converting' | 'transcribing' | 'labeling' | 'ready'
-type Speaker = 'AGENT' | 'CALLER'
 
 const step = ref<Step>('converting')
 const chunk = ref({ done: 0, total: 0 })
 const error = ref<string | null>(null)
 const recordingId = ref<string | null>(null)
 const lines = ref<{ time: string, speaker: Speaker, text: string }[]>([])
+const unlabeled = ref(false)
 const editing = ref<number | null>(null)
 const agent = ref('')
 const submitting = ref(false)
@@ -51,12 +51,19 @@ onMounted(async () => {
       chunk.value.done = index + 1
     }
 
-    // Shortcut until #27 labels speakers: calls open with the agent's greeting and then
-    // take turns, so alternate, AGENT first. The QA lead flips any that are wrong
+    // Gemma labels each line from context (#27). If that fails every line stays UNKNOWN,
+    // and the QA lead sets them below rather than losing the transcript
     step.value = 'labeling'
-    lines.value = stitchSegments(segments).map((line, index) => ({
+    const stitched = stitchSegments(segments)
+    const speakers = await $fetch<{ speakers: Speaker[] }>('/api/speakers', { method: 'POST', body: { lines: stitched.map(line => line.text) } })
+      .then(result => result.speakers)
+      .catch(() => {
+        unlabeled.value = true
+        return []
+      })
+    lines.value = stitched.map((line, index) => ({
       time: clock(line.ms),
-      speaker: index % 2 === 0 ? 'AGENT' : 'CALLER',
+      speaker: speakers[index] ?? 'UNKNOWN',
       text: line.text,
     }))
     step.value = 'ready'
@@ -69,9 +76,11 @@ onMounted(async () => {
 // Puts the cursor in a line's text as soon as it opens for editing
 const vFocus = { mounted: (el: HTMLElement) => el.focus() }
 
+const nextSpeaker: Record<Speaker, Speaker> = { AGENT: 'CALLER', CALLER: 'UNKNOWN', UNKNOWN: 'AGENT' }
+
 function toggleSpeaker(index: number) {
   const line = lines.value[index]!
-  line.speaker = line.speaker === 'AGENT' ? 'CALLER' : 'AGENT'
+  line.speaker = nextSpeaker[line.speaker]
 }
 
 async function review() {
@@ -134,8 +143,11 @@ function cancel() {
     <p v-if="error" class="text-destructive text-sm" role="alert">{{ error }}</p>
 
     <template v-if="step === 'ready'">
+      <p v-if="unlabeled" class="text-sm text-amber-700 dark:text-amber-300" role="status">
+        Gemma couldn't label the speakers, so every line is UNKNOWN. Click each speaker to set it.
+      </p>
       <p class="text-muted-foreground text-sm">
-        Speakers are a first guess, alternating from the agent's greeting. Click a speaker to switch it, and a line to fix its words.
+        Gemma labeled the speakers from context, and left UNKNOWN where it couldn't tell. Click a speaker to switch it, and a line to fix its words.
       </p>
 
       <label class="block max-w-xs space-y-1">
@@ -148,10 +160,12 @@ function cancel() {
           <span class="text-muted-foreground w-11 shrink-0 pt-1 font-mono text-xs">{{ line.time }}</span>
           <button
             type="button"
-            role="switch"
-            :aria-checked="line.speaker === 'AGENT'"
-            :aria-label="`Speaker at ${line.time}: ${line.speaker}, click to switch`"
-            :class="line.speaker === 'AGENT' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'"
+            :aria-label="`Speaker at ${line.time}: ${line.speaker}, click to switch to ${nextSpeaker[line.speaker]}`"
+            :class="{
+              'bg-primary text-primary-foreground': line.speaker === 'AGENT',
+              'bg-secondary text-secondary-foreground': line.speaker === 'CALLER',
+              'border border-dashed border-amber-600 text-amber-800 dark:text-amber-200': line.speaker === 'UNKNOWN',
+            }"
             class="w-20 shrink-0 rounded-full px-2 py-0.5 text-xs font-medium"
             @click="toggleSpeaker(index)"
           >

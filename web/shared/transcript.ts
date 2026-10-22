@@ -28,3 +28,6 @@ export function clock(ms: number) {
   const sec = Math.floor(ms / 1000)
   return `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`
 }
+
+/** Who said a line (#27). UNKNOWN when Gemma can't tell, for the QA lead to fix (#29) */
+export type Speaker = 'AGENT' | 'CALLER' | 'UNKNOWN'
