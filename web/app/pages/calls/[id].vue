@@ -6,9 +6,16 @@ const id = useRoute().params.id as string
 
 // Each section loads on its own, so the report fills in as each AI call returns
 const { data: call, error } = await useFetch(`/api/calls/${id}`)
-const { data: score, pending: scorePending, status: scoreStatus } = useLazyFetch(`/api/calls/${id}/score`, { server: false })
-const { data: flagged, pending: flagsPending, status: flagsStatus } = useLazyFetch(`/api/calls/${id}/flags`, { server: false })
-const { data: coaching, pending: coachingPending, status: coachingStatus } = useLazyFetch(`/api/calls/${id}/coaching`, { server: false })
+const { data: score, status: scoreStatus } = useLazyFetch(`/api/calls/${id}/score`, { server: false })
+const { data: flagged, status: flagsStatus } = useLazyFetch(`/api/calls/${id}/flags`, { server: false })
+const { data: coaching, status: coachingStatus } = useLazyFetch(`/api/calls/${id}/coaching`, { server: false })
+
+// `status`, not `pending`: these fetch on the client only, so the server sees `idle` while hydration
+// sees `pending`. Counting `idle` as loading renders the same loading text on both (#48)
+const loading = (status: { value: string }) => computed(() => status.value === 'idle' || status.value === 'pending')
+const scorePending = loading(scoreStatus)
+const flagsPending = loading(flagsStatus)
+const coachingPending = loading(coachingStatus)
 
 const header = computed(() => {
   const text = call.value?.transcript ?? ''
@@ -41,9 +48,8 @@ function scrollToLine(time: string | null) {
   if (time) document.getElementById(lineId(time))?.scrollIntoView({ behavior: 'smooth', block: 'center' })
 }
 
-// `status`, not `pending`: it's `idle` on the server and before the client fetches start, so
-// the button renders disabled on both and hydration keeps it disabled until every section is in
-const reportLoaded = computed(() => [scoreStatus, flagsStatus, coachingStatus].every(status => status.value === 'success' || status.value === 'error'))
+// Disabled until every section is in, on the server too, so hydration keeps it disabled
+const reportLoaded = computed(() => !scorePending.value && !flagsPending.value && !coachingPending.value)
 
 function printReport() {
   window.print()
