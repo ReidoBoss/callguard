@@ -1,0 +1,21 @@
+#!/bin/sh
+# Forced command for the GitHub Actions deploy key (installed by setup-vps.sh). The key
+# can only rsync into ~/app and rebuild the callguard container, nothing else.
+set -eu
+app="$HOME/app"
+
+case "${SSH_ORIGINAL_COMMAND:-}" in
+  'rsync --server '*)
+    # rrsync reads SSH_ORIGINAL_COMMAND and keeps every path inside $app
+    exec /usr/bin/rrsync "$app"
+    ;;
+  restart)
+    cd "$app"
+    docker compose up -d --build --remove-orphans --wait
+    docker image prune -f
+    ;;
+  *)
+    echo "callguard-ssh: only rsync and restart are allowed" >&2
+    exit 1
+    ;;
+esac
