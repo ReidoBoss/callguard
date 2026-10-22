@@ -1,6 +1,6 @@
-# CallGuard
+# Call Buddy
 
-CallGuard is call-center QA for QA leads and team leads who can't review every call by hand.
+Call Buddy is call-center QA for QA leads and team leads who can't review every call by hand.
 It reads a call recording or transcript, scores the agent against the script checklist
 (greeting, identity check, required disclosures), flags compliance risks such as a full card
 number read aloud, and drafts coaching notes. It all runs on Gemma 4 on our own Mac mini, so
@@ -15,11 +15,11 @@ https://call.budddy.app.
 
 Call recordings hold card numbers, birthdates and addresses. Sending them to a hosted AI or
 transcription API means trusting another company with your customers' data, and in many
-contact centers that is a compliance problem on its own. CallGuard sends call data only to
+contact centers that is a compliance problem on its own. Call Buddy sends call data only to
 our Gemma endpoint, and transcription runs locally with whisper.cpp: no OpenAI, Anthropic or
 Google API, no third-party transcription, no analytics.
 
-The **Privacy** page (`/privacy`) is the proof. It logs every request CallGuard's server has
+The **Privacy** page (`/privacy`) is the proof. It logs every request Call Buddy's server has
 sent since it started, with its destination and size but never its content, and says whether
 all of them stayed on our own hardware.
 

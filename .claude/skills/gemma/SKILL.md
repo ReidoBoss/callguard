@@ -1,6 +1,6 @@
 ---
 name: gemma
-description: How CallGuard calls its Gemma 4 endpoint (Ollama on our Mac mini, through an SSH tunnel), probing what it supports, server-side calls from Nitro, and prompts that return strict JSON. Use whenever writing, changing or debugging code or prompts that talk to Gemma, or when the user types /gemma to probe the endpoint.
+description: How Call Buddy calls its Gemma 4 endpoint (Ollama on our Mac mini, through an SSH tunnel), probing what it supports, server-side calls from Nitro, and prompts that return strict JSON. Use whenever writing, changing or debugging code or prompts that talk to Gemma, or when the user types /gemma to probe the endpoint.
 argument-hint: "[probe]"
 ---
 
