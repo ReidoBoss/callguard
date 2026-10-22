@@ -43,8 +43,7 @@ function scrollToLine(time: string | null) {
   <main class="mx-auto max-w-7xl space-y-6 px-6 py-8">
     <div class="flex flex-wrap items-start justify-between gap-4">
       <div>
-        <NuxtLink to="/" class="text-muted-foreground text-sm hover:underline">← Review another call</NuxtLink>
-        <h1 class="mt-1 text-2xl font-semibold">
+        <h1 class="text-2xl font-semibold">
           Call report<span v-if="header.call" class="text-muted-foreground font-mono font-normal"> · {{ header.call }}</span>
         </h1>
         <p v-if="header.agent" class="text-muted-foreground text-sm">
@@ -62,31 +61,53 @@ function scrollToLine(time: string | null) {
       <NuxtLink to="/" class="underline">Review it again</NuxtLink>
     </p>
 
-    <div v-else class="grid gap-6 lg:grid-cols-[20rem_1fr_20rem]">
-      <section class="space-y-3 rounded-lg border p-4" aria-labelledby="score-heading">
-        <h2 id="score-heading" class="font-medium">Score</h2>
-        <p v-if="scorePending" class="text-muted-foreground animate-pulse text-sm">Scoring against the script…</p>
-        <p v-else-if="!score?.reviewed" class="text-muted-foreground text-sm">Not scored yet.</p>
-        <template v-else>
-          <p class="text-5xl font-semibold tabular-nums">{{ score.overall }}<span class="text-muted-foreground text-2xl">%</span></p>
-          <ul class="space-y-1">
-            <li v-for="item in score.items" :key="item.id">
+    <!-- Score and coaching share the left column, so the transcript keeps its width beside the sidebar at 1280px -->
+    <div v-else class="grid items-start gap-6 lg:grid-cols-[18rem_1fr]">
+      <div class="space-y-6">
+        <section class="space-y-3 rounded-lg border p-4" aria-labelledby="score-heading">
+          <h2 id="score-heading" class="font-medium">Score</h2>
+          <p v-if="scorePending" class="text-muted-foreground animate-pulse text-sm">Scoring against the script…</p>
+          <p v-else-if="!score?.reviewed" class="text-muted-foreground text-sm">Not scored yet.</p>
+          <template v-else>
+            <p class="text-5xl font-semibold tabular-nums">{{ score.overall }}<span class="text-muted-foreground text-2xl">%</span></p>
+            <ul class="space-y-1">
+              <li v-for="item in score.items" :key="item.id">
+                <button
+                  type="button"
+                  class="hover:bg-accent flex w-full items-center justify-between gap-3 rounded px-2 py-1.5 text-left text-sm disabled:cursor-default disabled:hover:bg-transparent"
+                  :disabled="!item.line"
+                  @click="scrollToLine(item.line)"
+                >
+                  <span class="flex items-center gap-2">
+                    <span :class="item.pass ? 'text-emerald-600' : 'text-red-600'" class="font-bold">{{ item.pass ? '✓' : '✗' }}</span>
+                    {{ item.label }}
+                  </span>
+                  <span class="text-muted-foreground font-mono text-xs">{{ item.line ?? 'not found' }}</span>
+                </button>
+              </li>
+            </ul>
+          </template>
+        </section>
+
+        <section class="space-y-3 rounded-lg border p-4" aria-labelledby="coaching-heading">
+          <h2 id="coaching-heading" class="font-medium">Coaching</h2>
+          <p v-if="coachingPending" class="text-muted-foreground animate-pulse text-sm">Drafting coaching notes…</p>
+          <p v-else-if="!coaching?.reviewed" class="text-muted-foreground text-sm">No coaching notes yet.</p>
+          <ol v-else class="space-y-3">
+            <li v-for="(note, index) in coaching.notes" :key="index" class="text-sm">
+              <p>{{ note.text }}</p>
               <button
+                v-if="note.line"
                 type="button"
-                class="hover:bg-accent flex w-full items-center justify-between gap-3 rounded px-2 py-1.5 text-left text-sm disabled:cursor-default disabled:hover:bg-transparent"
-                :disabled="!item.line"
-                @click="scrollToLine(item.line)"
+                class="text-muted-foreground mt-1 font-mono text-xs hover:underline"
+                @click="scrollToLine(note.line)"
               >
-                <span class="flex items-center gap-2">
-                  <span :class="item.pass ? 'text-emerald-600' : 'text-red-600'" class="font-bold">{{ item.pass ? '✓' : '✗' }}</span>
-                  {{ item.label }}
-                </span>
-                <span class="text-muted-foreground font-mono text-xs">{{ item.line ?? 'not found' }}</span>
+                see {{ note.line }}
               </button>
             </li>
-          </ul>
-        </template>
-      </section>
+          </ol>
+        </section>
+      </div>
 
       <section class="space-y-3 rounded-lg border p-4" aria-labelledby="transcript-heading">
         <div class="flex items-center justify-between gap-3">
@@ -108,7 +129,7 @@ function scrollToLine(time: string | null) {
         </ul>
         <p v-else-if="!flagsPending && flagged?.reviewed" class="text-sm text-emerald-700 dark:text-emerald-300">No compliance flags.</p>
 
-        <ol class="max-h-[70vh] space-y-1 overflow-y-auto pr-2">
+        <ol class="max-h-[75vh] space-y-1 overflow-y-auto pr-2">
           <li
             v-for="line in lines"
             :id="lineId(line.time)"
@@ -125,25 +146,6 @@ function scrollToLine(time: string | null) {
           </li>
         </ol>
         <pre v-if="!lines.length" class="text-sm whitespace-pre-wrap">{{ call?.transcript }}</pre>
-      </section>
-
-      <section class="space-y-3 rounded-lg border p-4" aria-labelledby="coaching-heading">
-        <h2 id="coaching-heading" class="font-medium">Coaching</h2>
-        <p v-if="coachingPending" class="text-muted-foreground animate-pulse text-sm">Drafting coaching notes…</p>
-        <p v-else-if="!coaching?.reviewed" class="text-muted-foreground text-sm">No coaching notes yet.</p>
-        <ol v-else class="space-y-3">
-          <li v-for="(note, index) in coaching.notes" :key="index" class="text-sm">
-            <p>{{ note.text }}</p>
-            <button
-              v-if="note.line"
-              type="button"
-              class="text-muted-foreground mt-1 font-mono text-xs hover:underline"
-              @click="scrollToLine(note.line)"
-            >
-              see {{ note.line }}
-            </button>
-          </li>
-        </ol>
       </section>
     </div>
   </main>
