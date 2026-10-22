@@ -40,8 +40,6 @@ const severityRank: Record<string, number> = { high: 0, medium: 1, low: 2 }
 const sortedFlags = computed(() => [...(flagged.value?.flags ?? [])].sort((a, b) =>
   (severityRank[a.severity] ?? 3) - (severityRank[b.severity] ?? 3) || a.line.localeCompare(b.line, undefined, { numeric: true })))
 
-const flagsByLine = computed(() => new Map((flagged.value?.flags ?? []).map(flag => [flag.line, flag])))
-
 // The QA lead's confirm or dismiss on each flag (#21), saved with the call
 const decisions = ref<Record<string, FlagDecision>>({})
 const notes = ref<Record<string, string>>({})
@@ -54,6 +52,17 @@ const savingFlag = ref<string | null>(null)
 const decisionError = ref<string | null>(null)
 
 const decisionOf = (flag: { rule: string, line: string }) => decisions.value[flagKey(flag.rule, flag.line)]
+
+// One flag per transcript line: its most severe one that isn't dismissed, else its most severe,
+// so a line with a high and a low flag never shows as low (#59)
+const flagsByLine = computed(() => {
+  const byLine = new Map<string, (typeof sortedFlags.value)[number]>()
+  for (const flag of sortedFlags.value) {
+    const shown = byLine.get(flag.line)
+    if (!shown || (decisionOf(shown)?.status === 'dismissed' && decisionOf(flag)?.status !== 'dismissed')) byLine.set(flag.line, flag)
+  }
+  return byLine
+})
 
 async function decide(flag: { rule: string, line: string }, status: FlagDecision['status'] | null) {
   const key = flagKey(flag.rule, flag.line)
