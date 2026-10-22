@@ -116,7 +116,7 @@ function printReport() {
         <div>
           <p class="flex items-center gap-1.5 font-semibold">
             <ShieldCheck class="size-4" aria-hidden="true" />
-            CallGuard · Call report
+            Call Buddy · Call report
           </p>
           <h1 class="text-2xl font-bold">
             Call {{ header.call ?? id }}<template v-if="header.agent"> · {{ header.agent }}</template>

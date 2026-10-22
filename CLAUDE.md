@@ -1,6 +1,6 @@
-# CallGuard
+# Call Buddy
 
-Call-center QA that never leaves our hardware. CallGuard reads call recordings or
+Call-center QA that never leaves our hardware. Call Buddy reads call recordings or
 transcripts, scores each agent against a script checklist (greeting, identity check,
 required disclosures), flags compliance risks such as a full card number read aloud, and
 drafts coaching notes. Built in one day at FUTURE FORGE: The ALMA Hackathon (2026-10-22,
@@ -175,7 +175,7 @@ bash .claude/hooks/setup-codex-rtk.sh
 
 It runs `rtk init -g --codex`, which registers rtk's native `rtk hook codex` in
 `${CODEX_HOME:-~/.codex}/hooks.json`, and re-running it keeps one hook. If SKLoud Aurora's
-Codex adapter is already installed, it does nothing: that adapter already hands CallGuard
+Codex adapter is already installed, it does nothing: that adapter already hands Call Buddy
 to the same native hook, and a second hook would rewrite every command twice. Restart
 Codex, enable hooks (`codex --enable hooks`) and trust the hook when asked; a plain
 `git status` should then come back as rtk's compact status. `RTK_DISABLED=1 codex` turns

@@ -29,7 +29,7 @@ function isActive(to: string) {
       <header class="space-y-3 px-2 pt-2">
         <NuxtLink to="/" class="flex items-center gap-2 text-xl font-semibold">
           <ShieldCheck class="size-6 text-blue-400" aria-hidden="true" />
-          CallGuard
+          Call Buddy
         </NuxtLink>
         <Badge variant="outline" class="h-auto gap-1.5 py-1 text-sm whitespace-normal">
           <Lock aria-hidden="true" />
