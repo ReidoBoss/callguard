@@ -11,5 +11,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Call not found' })
   }
 
-  return review
+  // Masked here, like the flag quotes (#5), so a card number never reaches the browser in full
+  return { ...review, transcript: maskCardNumbers(review.transcript) }
 })

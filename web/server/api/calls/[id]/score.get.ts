@@ -7,7 +7,10 @@ export default defineEventHandler(async (event): Promise<ScoreResult> => {
   const call = await callFromEvent(event)
   if (getOverallScore(call.score) === null) {
     const result = await scoreTranscript(call.transcript)
-    await useStorage<CallReviewRecord>('calls').setItem(call.id, { ...call, score: { ...result, items: result.items.map(item => ({ ...item })) } })
+    // Read the call again: the flags route (#5) may have saved its flags while Gemma scored
+    const storage = useStorage<CallReviewRecord>('calls')
+    const latest = await storage.getItem(call.id) ?? call
+    await storage.setItem(call.id, { ...latest, score: { ...result, items: result.items.map(item => ({ ...item })) } })
     return result
   }
 
