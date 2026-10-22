@@ -6,8 +6,6 @@ disable-model-invocation: true
 
 # Run the app locally
 
-If `web/` doesn't exist yet, stop: CLAUDE.md's **Day one** creates it.
-
 ## 1. See what's up
 
 ```sh
