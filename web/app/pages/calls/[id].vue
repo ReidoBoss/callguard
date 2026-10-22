@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { Printer, ShieldCheck } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
+import { flagKey } from '#shared/calls'
+import type { FlagDecision } from '#shared/calls'
 
 const id = useRoute().params.id as string
 
@@ -35,6 +37,38 @@ const sortedFlags = computed(() => [...(flagged.value?.flags ?? [])].sort((a, b)
   (severityRank[a.severity] ?? 3) - (severityRank[b.severity] ?? 3) || a.line.localeCompare(b.line, undefined, { numeric: true })))
 
 const flagsByLine = computed(() => new Map((flagged.value?.flags ?? []).map(flag => [flag.line, flag])))
+
+// The QA lead's confirm or dismiss on each flag (#21), saved with the call
+const decisions = ref<Record<string, FlagDecision>>({})
+const notes = ref<Record<string, string>>({})
+watch(call, (value) => {
+  decisions.value = { ...value?.decisions }
+  notes.value = Object.fromEntries(Object.entries(decisions.value).map(([key, decision]) => [key, decision.note]))
+}, { immediate: true })
+
+const savingFlag = ref<string | null>(null)
+const decisionError = ref<string | null>(null)
+
+const decisionOf = (flag: { rule: string, line: string }) => decisions.value[flagKey(flag.rule, flag.line)]
+
+async function decide(flag: { rule: string, line: string }, status: FlagDecision['status'] | null) {
+  const key = flagKey(flag.rule, flag.line)
+  savingFlag.value = key
+  decisionError.value = null
+  try {
+    // Typed by hand: inferring it from the dynamic URL overflows TypeScript's stack
+    decisions.value = await $fetch<Record<string, FlagDecision>>(`/api/calls/${id}/decisions` as string, {
+      method: 'PUT',
+      body: { rule: flag.rule, line: flag.line, status, note: notes.value[key] ?? '' },
+    })
+  }
+  catch {
+    decisionError.value = 'Couldn\'t save that, try again'
+  }
+  finally {
+    savingFlag.value = null
+  }
+}
 
 const severityRow: Record<string, string> = {
   high: 'border-red-600 bg-red-50 dark:bg-red-950/40',
@@ -109,6 +143,9 @@ function printReport() {
               <td class="py-2">
                 {{ flag.rule.replaceAll('_', ' ') }}
                 <span class="block text-neutral-600">“{{ maskCardNumbers(flag.quote) }}”</span>
+                <span class="block font-semibold">
+                  {{ decisionOf(flag)?.status === 'confirmed' ? 'Confirmed' : decisionOf(flag)?.status === 'dismissed' ? 'Dismissed' : 'Not reviewed' }} by QA lead<template v-if="decisionOf(flag)?.note">: {{ maskCardNumbers(decisionOf(flag)!.note) }}</template>
+                </span>
               </td>
             </tr>
           </tbody>
@@ -224,33 +261,91 @@ function printReport() {
           <p v-if="flagsPending" class="text-muted-foreground animate-pulse text-sm">Checking compliance…</p>
         </div>
 
-        <ul v-if="flagged?.flags.length" class="flex flex-wrap gap-2">
-          <li v-for="flag in sortedFlags" :key="flag.line + flag.rule">
-            <button
-              type="button"
-              :class="severityPill[flag.severity]"
-              class="rounded-full px-3 py-1 text-xs font-medium"
-              @click="scrollToLine(flag.line)"
-            >
-              {{ flag.severity }} · {{ flag.rule.replaceAll('_', ' ') }} · {{ flag.line }}
-            </button>
+        <ul v-if="flagged?.flags.length" class="space-y-2">
+          <li
+            v-for="flag in sortedFlags"
+            :key="flagKey(flag.rule, flag.line)"
+            :class="decisionOf(flag)?.status === 'dismissed' ? 'opacity-60' : ''"
+            class="space-y-2 rounded-md border p-3 text-sm"
+          >
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <button
+                type="button"
+                :class="severityPill[flag.severity]"
+                class="rounded-full px-3 py-1 text-xs font-medium"
+                @click="scrollToLine(flag.line)"
+              >
+                {{ flag.severity }} · {{ flag.rule.replaceAll('_', ' ') }} · {{ flag.line }}
+              </button>
+              <span
+                :class="{
+                  'text-emerald-700 dark:text-emerald-300': decisionOf(flag)?.status === 'confirmed',
+                  'text-muted-foreground line-through': decisionOf(flag)?.status === 'dismissed',
+                  'text-amber-700 dark:text-amber-300': !decisionOf(flag),
+                }"
+                class="text-xs font-medium"
+              >
+                {{ decisionOf(flag)?.status === 'confirmed' ? 'Confirmed' : decisionOf(flag)?.status === 'dismissed' ? 'Dismissed' : 'Waiting for review' }}
+              </span>
+            </div>
+            <p v-if="flag.quote" class="text-muted-foreground italic">“{{ flag.quote }}”</p>
+            <div class="flex flex-wrap items-center gap-2">
+              <input
+                v-model="notes[flagKey(flag.rule, flag.line)]"
+                type="text"
+                maxlength="500"
+                placeholder="Note (optional)"
+                :aria-label="`Note on ${flag.rule.replaceAll('_', ' ')} at ${flag.line}`"
+                class="border-input bg-background min-w-0 flex-1 rounded-md border px-2 py-1 text-sm"
+              >
+              <button
+                type="button"
+                :aria-pressed="decisionOf(flag)?.status === 'confirmed'"
+                :disabled="savingFlag !== null"
+                :class="decisionOf(flag)?.status === 'confirmed' ? 'bg-emerald-600 text-white border-emerald-600' : 'hover:bg-accent'"
+                class="rounded-md border px-3 py-1 text-sm font-medium disabled:opacity-60"
+                @click="decide(flag, 'confirmed')"
+              >
+                Confirm
+              </button>
+              <button
+                type="button"
+                :aria-pressed="decisionOf(flag)?.status === 'dismissed'"
+                :disabled="savingFlag !== null"
+                :class="decisionOf(flag)?.status === 'dismissed' ? 'bg-foreground text-background border-foreground' : 'hover:bg-accent'"
+                class="rounded-md border px-3 py-1 text-sm font-medium disabled:opacity-60"
+                @click="decide(flag, 'dismissed')"
+              >
+                Dismiss
+              </button>
+              <button
+                v-if="decisionOf(flag)"
+                type="button"
+                :disabled="savingFlag !== null"
+                class="text-muted-foreground px-1 text-xs hover:underline disabled:opacity-60"
+                @click="decide(flag, null)"
+              >
+                Undo
+              </button>
+            </div>
           </li>
         </ul>
         <p v-else-if="!flagsPending && flagged?.reviewed" class="text-sm text-emerald-700 dark:text-emerald-300">No compliance flags.</p>
+        <p v-if="decisionError" class="text-destructive text-sm" role="alert">{{ decisionError }}</p>
 
         <ol class="max-h-[75vh] space-y-1 overflow-y-auto pr-2">
           <li
             v-for="line in lines"
             :id="lineId(line.time)"
             :key="line.time + line.text"
-            :class="flagsByLine.get(line.time) ? severityRow[flagsByLine.get(line.time)!.severity] : 'border-transparent'"
+            :class="!flagsByLine.get(line.time) ? 'border-transparent' : decisionOf(flagsByLine.get(line.time)!)?.status === 'dismissed' ? 'border-muted-foreground/40 border-dashed' : severityRow[flagsByLine.get(line.time)!.severity]"
             class="scroll-mt-4 rounded-r border-l-4 px-3 py-1.5 text-sm"
           >
             <span class="text-muted-foreground mr-2 font-mono text-xs">{{ line.time }}</span>
             <span class="mr-1 font-medium">{{ line.speaker === 'AGENT' ? header.agent ?? 'Agent' : 'Caller' }}:</span>
             {{ line.text }}
             <p v-if="flagsByLine.get(line.time)" class="mt-1 text-xs font-medium">
-              ⚑ {{ flagsByLine.get(line.time)!.rule.replaceAll('_', ' ') }}
+              ⚑ {{ flagsByLine.get(line.time)!.rule.replaceAll('_', ' ') }}<template v-if="decisionOf(flagsByLine.get(line.time)!)"> · {{ decisionOf(flagsByLine.get(line.time)!)!.status }}</template>
             </p>
           </li>
         </ol>

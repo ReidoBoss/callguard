@@ -1,5 +1,12 @@
 export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue }
 
+// The QA lead's call on one AI flag (#21)
+export interface FlagDecision {
+  status: 'confirmed' | 'dismissed'
+  note: string
+  at: string
+}
+
 export interface CallReviewRecord {
   id: string
   transcript: string
@@ -8,6 +15,20 @@ export interface CallReviewRecord {
   coaching: JsonValue
   agent: string
   createdAt: string
+  // Keyed by flagKey(); optional so reviews saved before #21 still load
+  decisions?: Record<string, FlagDecision>
+}
+
+/** Identifies a flag within its call: the same rule can fire on several lines */
+export function flagKey(rule: string, line: string) {
+  return `${rule}@${line}`
+}
+
+/** flagKey() for a saved flag, read the way the flags route reads it */
+export function storedFlagKey(flag: JsonValue) {
+  if (!flag || typeof flag !== 'object' || Array.isArray(flag)) return null
+  const rule = typeof flag.rule === 'string' ? flag.rule : typeof flag.message === 'string' ? flag.message : 'Compliance flag'
+  return flagKey(rule, typeof flag.line === 'string' ? flag.line : '')
 }
 
 export interface CallSummary {
@@ -41,9 +62,11 @@ export function getOverallScore(score: JsonValue): number | null {
   return null
 }
 
-export function getHighSeverityFlagCount(flags: JsonValue[]): number {
+/** High-severity flags, leaving out any the QA lead dismissed (#21) */
+export function getHighSeverityFlagCount(flags: JsonValue[], decisions: CallReviewRecord['decisions'] = {}): number {
   return flags.filter((flag) => {
     if (!flag || typeof flag !== 'object' || Array.isArray(flag)) return false
+    if (decisions[storedFlagKey(flag) ?? '']?.status === 'dismissed') return false
     return typeof flag.severity === 'string' && flag.severity.toLowerCase() === 'high'
   }).length
 }
@@ -53,7 +76,7 @@ export function toCallSummary(review: CallReviewRecord): CallSummary {
     id: review.id,
     agent: review.agent,
     score: getOverallScore(review.score),
-    highSeverityFlagCount: getHighSeverityFlagCount(review.flags),
+    highSeverityFlagCount: getHighSeverityFlagCount(review.flags, review.decisions),
     createdAt: review.createdAt,
   }
 }
