@@ -25,8 +25,12 @@ chmod 600 ~callguard/.ssh/authorized_keys
 
 # The tunnel listens on the Docker bridge only, never the public interface. Binding to
 # an address other than loopback needs GatewayPorts, so only this user gets it.
+# ClientAlive drops a dead tunnel within 90 s; otherwise its session keeps holding the
+# port and the Mac mini's reconnects fail (#78).
 cat > /etc/ssh/sshd_config.d/99-callguard.conf <<'EOF'
 Match User callguard
+    ClientAliveInterval 30
+    ClientAliveCountMax 3
     GatewayPorts clientspecified
     AllowTcpForwarding remote
     PermitListen 172.17.0.1:11434
