@@ -8,16 +8,35 @@ SDD
 Call Buddy is call-center QA for QA leads and team leads who can't review every call by hand. It reads a call recording or transcript, scores the agent against the script checklist (greeting, identity check, required disclosures), flags compliance risks such as a full card number read aloud, and drafts coaching notes. It all runs on Gemma 4 on our own Mac mini, so call data never reaches a hosted AI API.
 
 ## Demo video
-https://youtu.be/...
+[https://youtu.be/...](https://l.messenger.com/l.php?u=https%3A%2F%2Fdrive.google.com%2Ffile%2Fd%2F1CR43_vAB3rTnWWUj47TqW-70xw9dX-p_%2Fview%3Fusp%3Dsharing&h=AUDgBle73y5VnWZB-ENOmt93RNO9bEIWgeeVmqAR0STQXFEivLImt_O_nlP3OUSas_tPvOnbWrqF6jZfbhRUaqdem3U78Qad4Y2lxdue99wHEFl-qYhv4FcP1fjPG4E)
 
 ## Slides
-https://docs.google.com/presentation/...
-
+[https://docs.google.com/presentation/...
+](https://www.canva.com/design/DAHYt9k9zyA/2nncqswKJiDRzwHyjNEvnw/edit)
 ## How it works
-Tech stack, how AI (Claude Haiku / embeddings) is used.
+  - Frontend: Nuxt 4, Vue 3, Tailwind 4, shadcn-vue, TypeScript.
+  - Backend: Nitro server routes, with filesystem storage.
+  - AI: Gemma 4 on Ollama, self-hosted on a Mac mini and reached over an SSH tunnel. whisper.cpp handles transcription. No hosted AI APIs.
+  - Tooling: pnpm, ESLint, husky and commitlint.
+  - Deploy: GitHub Actions, Docker, a VPS with Caddy at call.budddy.app.
 
 ## How to run it
-Setup steps.
+ # 1. Install (once)
+  git clone https://github.com/ReidoBoss/callguard.git call-buddy
+  cd call-buddy && pnpm install
+  cd web && pnpm install
+
+  # 2. Open the Gemma tunnel (needs your SSH login)
+  ssh -f -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 \
+    -L 11434:localhost:11434 -J personal-vps macmini
+  curl -s localhost:11434/v1/models     # should answer
+
+  # 3. Create web/.env (once)
+  GEMMA_BASE_URL=http://localhost:11434/v1
+  GEMMA_MODEL=gemma4:e4b
+
+  # 4. Run
+  pnpm run dev                          # http://localhost:3000
 
 ## Business plan
 # CallGuard Business Plan
