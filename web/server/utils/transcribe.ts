@@ -1,22 +1,17 @@
 import { spawn } from 'node:child_process'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
+import { clock, stitchSegments } from '#shared/transcript'
+import type { Segment } from '#shared/transcript'
 
 interface WhisperSegment {
   offsets: { from: number, to: number }
   text: string
 }
 
-interface Line {
-  ms: number
-  text: string
-}
-
-// Transcribes each chunk in order with the local whisper.cpp CLI and stitches the lines.
-// Each line's time is the chunk's start plus whisper's segment time. A segment that
-// doesn't end a sentence is joined to the next one, so a sentence cut at a chunk
-// boundary stays one line. Speakers are UNKNOWN until #27 labels them.
-export async function transcribeChunks(dir: string, chunks: Chunk[]) {
+// Transcribes one chunk with the local whisper.cpp CLI. Each segment's time is the chunk's
+// start plus whisper's segment time, so it's measured from the start of the recording
+export async function transcribeChunk(dir: string, chunk: Chunk): Promise<Segment[]> {
   const { whisperCli, whisperModel } = useRuntimeConfig()
   if (!whisperCli || !whisperModel) {
     throw createError({
@@ -25,29 +20,20 @@ export async function transcribeChunks(dir: string, chunks: Chunk[]) {
     })
   }
 
-  const lines: Line[] = []
-  let open = false
-  for (const chunk of chunks) {
-    const out = join(dir, chunk.file.replace(/\.wav$/, ''))
-    await runWhisper(whisperCli, ['-m', whisperModel, '-f', join(dir, chunk.file), '-l', 'en', '-np', '-oj', '-of', out])
-    const { transcription } = JSON.parse(await readFile(`${out}.json`, 'utf8')) as { transcription: WhisperSegment[] }
-
-    for (const segment of transcription) {
-      const text = segment.text.trim()
-      if (!text) continue
-      const last = lines.at(-1)
-      if (open && last) last.text += ` ${text}`
-      else lines.push({ ms: chunk.startSec * 1000 + segment.offsets.from, text })
-      open = !/[.?!]["')\]]*$/.test(text)
-    }
-  }
-
-  return lines.map(line => `[${clock(line.ms)}] UNKNOWN: ${line.text}`).join('\n')
+  const out = join(dir, chunk.file.replace(/\.wav$/, ''))
+  await runWhisper(whisperCli, ['-m', whisperModel, '-f', join(dir, chunk.file), '-l', 'en', '-np', '-oj', '-of', out])
+  const { transcription } = JSON.parse(await readFile(`${out}.json`, 'utf8')) as { transcription: WhisperSegment[] }
+  return transcription.map(segment => ({ ms: chunk.startSec * 1000 + segment.offsets.from, text: segment.text }))
 }
 
-function clock(ms: number) {
-  const sec = Math.floor(ms / 1000)
-  return `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`
+// Transcribes each chunk in order and stitches the lines (see stitchSegments).
+// Speakers are UNKNOWN until #27 labels them.
+export async function transcribeChunks(dir: string, chunks: Chunk[]) {
+  const segments: Segment[] = []
+  for (const chunk of chunks) {
+    segments.push(...await transcribeChunk(dir, chunk))
+  }
+  return stitchSegments(segments).map(line => `[${clock(line.ms)}] UNKNOWN: ${line.text}`).join('\n')
 }
 
 function runWhisper(cli: string, args: string[]) {
