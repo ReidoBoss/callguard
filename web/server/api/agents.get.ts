@@ -1,16 +1,20 @@
-// Agents ranked by high-severity flags, then lowest score, from the calls reviewed since the
-// server started. Shortcut: score and flags come from the answer-key stub until #4 and #5
-export default defineEventHandler(() => {
-  const byAgent = new Map<string, { id: string, createdAt: string, score: number | null, highFlags: number }[]>()
+import { getHighSeverityFlagCount, getOverallScore } from '#shared/calls'
+import type { CallReviewRecord } from '#shared/calls'
 
-  for (const call of calls.values()) {
-    const agent = call.transcript.match(/^AGENT:\s*(.+)$/m)?.[1]?.trim() ?? 'Unknown'
-    const review = answerKeyFor(call.transcript)
+// Agents ranked by high-severity flags, then lowest score, across saved reviews.
+export default defineEventHandler(async () => {
+  const byAgent = new Map<string, { id: string, createdAt: string, score: number | null, highFlags: number }[]>()
+  const storage = useStorage<CallReviewRecord>('calls')
+  const reviews = await Promise.all((await storage.getKeys()).map(key => storage.getItem(key)))
+
+  for (const call of reviews) {
+    if (!call) continue
+    const agent = call.agent
     const row = {
       id: call.id,
       createdAt: call.createdAt,
-      score: review?.score.overall ?? null,
-      highFlags: review?.flags.flags.filter(flag => flag.severity === 'high').length ?? 0,
+      score: getOverallScore(call.score),
+      highFlags: getHighSeverityFlagCount(call.flags),
     }
     byAgent.set(agent, [...(byAgent.get(agent) ?? []), row])
   }

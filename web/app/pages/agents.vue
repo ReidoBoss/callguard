@@ -14,7 +14,7 @@ function toggle(agent: string) {
     <header>
       <h1 class="text-2xl font-semibold">Agents</h1>
       <p class="text-muted-foreground mt-1 text-sm">
-        Ranked by high-severity flags, then script score, across the calls reviewed this session.
+        Ranked by high-severity flags, then script score, across saved call reviews.
       </p>
     </header>
 

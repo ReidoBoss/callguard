@@ -1,5 +1,6 @@
 // Shortcut: the report's data, hand-copied from demo/checklist.md's answer key until
 // #4 (score), #5 (flags) and #6 (coaching) return the same shapes from Gemma
+import type { CallReviewRecord } from '#shared/calls'
 
 export type Severity = 'high' | 'medium' | 'low'
 
@@ -92,15 +93,13 @@ export function answerKeyFor(transcript: string) {
 }
 
 /** The stored call for a route's `id`, or a 404 */
-export function callFromEvent(event: Parameters<typeof getRouterParam>[0]) {
-  const call = calls.get(getRouterParam(event, 'id') ?? '')
+export async function callFromEvent(event: Parameters<typeof getRouterParam>[0]) {
+  const id = getRouterParam(event, 'id') ?? ''
+  const call = /^[\da-f]{8}-(?:[\da-f]{4}-){3}[\da-f]{12}$/i.test(id)
+    ? await useStorage<CallReviewRecord>('calls').getItem(id)
+    : null
   if (!call) {
     throw createError({ statusCode: 404, statusMessage: 'No such call' })
   }
   return call
-}
-
-/** Stands in for Gemma's response time, so the report's sections fill in one by one */
-export function stubDelay(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms))
 }

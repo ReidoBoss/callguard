@@ -10,7 +10,7 @@ const { data: coaching, pending: coachingPending } = useLazyFetch(`/api/calls/${
 const header = computed(() => {
   const text = call.value?.transcript ?? ''
   const field = (name: string) => text.match(new RegExp(`^${name}:\\s*(.+)$`, 'm'))?.[1]?.trim()
-  return { call: field('CALL'), agent: field('AGENT'), caller: field('CALLER'), duration: field('DURATION') }
+  return { call: field('CALL'), agent: call.value?.agent ?? field('AGENT'), caller: field('CALLER'), duration: field('DURATION') }
 })
 
 // `[01:05] AGENT: …` lines. Anything else (the header, pasted text without timestamps) is skipped
@@ -41,6 +41,7 @@ function scrollToLine(time: string | null) {
 
 <template>
   <main class="mx-auto max-w-7xl space-y-6 px-6 py-8">
+    <NuxtLink to="/calls" class="text-muted-foreground hover:text-foreground text-sm">← All calls</NuxtLink>
     <div class="flex flex-wrap items-start justify-between gap-4">
       <div>
         <h1 class="text-2xl font-semibold">
@@ -57,7 +58,7 @@ function scrollToLine(time: string | null) {
     </div>
 
     <p v-if="error" class="text-destructive" role="alert">
-      This call isn't here. Calls are kept in memory, so a server restart clears them.
+      This saved call report couldn't be found.
       <NuxtLink to="/" class="underline">Review it again</NuxtLink>
     </p>
 
