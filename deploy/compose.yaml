@@ -16,6 +16,10 @@ services:
       - host.docker.internal:host-gateway
     volumes:
       - data:/app/.data
+    # Each transcribed chunk runs whisper.cpp; leave buddy-root's 4th core and the rest of
+    # its memory to Budddy staging (#80)
+    cpus: 3
+    mem_limit: 3g
     networks: [budddy]
 
 volumes:
