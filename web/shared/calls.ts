@@ -17,6 +17,8 @@ export interface CallReviewRecord {
   createdAt: string
   // Keyed by flagKey(); optional so reviews saved before #21 still load
   decisions?: Record<string, FlagDecision>
+  // Set once Gemma has checked the flags (#5), so a call with none isn't checked again
+  flagsReviewed?: boolean
 }
 
 /** Identifies a flag within its call: the same rule can fire on several lines */

@@ -10,16 +10,12 @@ export default defineEventHandler(async (event) => {
   }
 
   const id = crypto.randomUUID()
-  // Keep #8's demo flags with the review so every view reads the same saved data. The score
-  // (#4) and coaching (#6) come from Gemma when the report first asks for them
-  const initialReview = answerKeyFor(transcript)
+  // The score (#4), flags (#5) and coaching (#6) come from Gemma when the report first asks for them
   const review: CallReviewRecord = {
     id,
     transcript,
     score: isJsonValue(body?.score) ? body.score : null,
-    flags: Array.isArray(body?.flags) && body.flags.every(isJsonValue)
-      ? body.flags
-      : initialReview?.flags.flags ?? [],
+    flags: Array.isArray(body?.flags) && body.flags.every(isJsonValue) ? body.flags : [],
     coaching: isJsonValue(body?.coaching) ? body.coaching : [],
     agent: typeof body?.agent === 'string' && body.agent.trim()
       ? body.agent.trim()
