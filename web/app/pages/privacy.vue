@@ -16,7 +16,7 @@ function formatBytes(bytes: number | null) {
       <div>
         <h1 class="text-2xl font-semibold">Privacy</h1>
         <p class="text-muted-foreground mt-1 text-sm">
-          Every request CallGuard's server sent since it started. Only the destination is logged, never call content.
+          Every request Call Buddy's server sent since it started. Only the destination is logged, never call content.
         </p>
       </div>
       <button type="button" class="border-input hover:bg-accent rounded-md border px-3 py-1.5 text-sm" @click="refresh()">

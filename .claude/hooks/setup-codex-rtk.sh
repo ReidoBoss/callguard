@@ -4,7 +4,7 @@
 #   bash .claude/hooks/setup-codex-rtk.sh
 # It installs rtk's own global Codex hook (`rtk hook codex`), unless SKLoud
 # Aurora's adapter is already installed: that one hands every non-Aurora repo,
-# CallGuard included, to the same native hook, and a second hook would rewrite
+# Call Buddy included, to the same native hook, and a second hook would rewrite
 # each command twice.
 set -euo pipefail
 
@@ -16,7 +16,7 @@ codex_dir=${CODEX_HOME:-"$HOME/.codex"}
 hooks="$codex_dir/hooks.json"
 
 if [[ -f "$hooks" ]] && grep -q 'aurora-rtk/codex-rtk.sh' "$hooks"; then
-  echo "Aurora's Codex rtk hook is already in $hooks; it covers CallGuard too. Nothing to do."
+  echo "Aurora's Codex rtk hook is already in $hooks; it covers Call Buddy too. Nothing to do."
   exit 0
 fi
 

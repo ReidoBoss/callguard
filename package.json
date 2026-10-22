@@ -1,7 +1,7 @@
 {
-  "name": "callguard",
+  "name": "call-buddy",
   "private": true,
-  "description": "Repo-level tooling (git hooks) for CallGuard; the app is its own pnpm project in web/",
+  "description": "Repo-level tooling (git hooks) for Call Buddy; the app is its own pnpm project in web/",
   "packageManager": "pnpm@12.9.1",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
