@@ -47,8 +47,11 @@ export async function chunkRecording(input: string, dir: string): Promise<Chunk[
     '-reset_timestamps', '1',
     join(dir, 'chunk_%03d.wav'),
   ])
+  return readChunks(dir)
+}
 
-  const rows = (await readFile(list, 'utf8')).trim().split(/\r?\n/).filter(Boolean)
+export async function readChunks(dir: string): Promise<Chunk[]> {
+  const rows = (await readFile(join(dir, 'chunks.csv'), 'utf8')).trim().split(/\r?\n/).filter(Boolean)
   return rows.map((row, index) => {
     const [file = '', start = '0', end = '0'] = row.split(',')
     return { index, file, startSec: Math.round(Number(start)), endSec: Number(end) }
