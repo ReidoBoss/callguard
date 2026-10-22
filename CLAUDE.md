@@ -11,11 +11,18 @@ endpoint and nowhere else: no OpenAI, Anthropic, Google or other hosted AI API, 
 third-party transcription service, no analytics. A feature that needs an outside API is
 asked about first, because it breaks the demo's whole argument.
 
+The public site at https://call.budddy.app is the exception to "our hardware": it
+processes call data on our VPS (buddy-root, shared with Budddy staging) and reaches Gemma
+over an SSH tunnel to the Mac mini, so anything uploaded there sits on that VPS while it's
+processed. It's open to everyone, no login. The demo laptop (#23) still runs everything
+locally. See **Deploy**.
+
 | Path | Stack | Notes |
 |---|---|---|
 | `web/` | Nuxt 4, Tailwind 4, shadcn-vue | The whole app. UI in `web/app/`, Nitro server routes in `web/server/api/` call Gemma. Its own pnpm project |
 | `demo/` | Plain text | The demo calls, the script checklist and the answer key (#3): what each AI feature should return. The app reads them from here |
 | `web/server/` | Nitro (Nuxt's server) | The only code that talks to Gemma. The browser never calls the endpoint directly |
+| `deploy/` | Docker, shell, launchd | How `main` reaches https://call.budddy.app, see **Deploy** |
 | Transcription | Not decided | Gemma 4 audio input if our Ollama endpoint accepts it, otherwise a local whisper.cpp CLI called from a server route, otherwise pasted transcripts. Decide after probing the endpoint (`/gemma`) |
 
 The root holds only husky and commitlint. `pnpm install` at the root does not install
@@ -78,6 +85,27 @@ Never a `:cloud` tag (`gemma4:cloud`, `gemma4:31b-cloud`): those run on Ollama's
 
 Read them through `useRuntimeConfig()` on the server, never `NUXT_PUBLIC_*`, so the
 endpoint isn't shipped to the browser. How to call it is in `.claude/skills/gemma/`.
+
+## Deploy
+
+Every push to `main` runs `.github/workflows/deploy.yml`: it builds `web/`, rsyncs the
+build and `deploy/` to buddy-root as user `callguard`, rebuilds the `callguard` container
+(`deploy/Dockerfile`, Node and ffmpeg), and fails if https://call.budddy.app doesn't
+answer. The deploy key (`DEPLOY_SSH_KEY`) is held by a forced command,
+`deploy/callguard-ssh`, to rsync into `~callguard/app` and restart, nothing else.
+
+The container joins `budddy-staging_default`, and budddy's Caddy serves it from the
+`call.budddy.app` block in Stupid-Developing-Devs/Budddy's `deploy/staging/Caddyfile`.
+A change to that block needs a Budddy PR, then `docker exec budddy-staging-caddy-1 caddy
+reload --config /etc/caddy/Caddyfile` on the VPS, because budddy's deploy doesn't reload Caddy.
+
+Gemma: the Mac mini's LaunchAgent (`deploy/macmini/`) holds a reverse tunnel open from
+`172.17.0.1:11434` on buddy-root, the Docker bridge only, to its Ollama. The container
+reaches it as `host.docker.internal`. If the site can't reach Gemma, check Ollama first
+(**Environment**), then `ssh buddy-root 'ss -ltn | grep 11434'`.
+
+One-time setup, already done: `deploy/setup-vps.sh` on buddy-root and the LaunchAgent on
+the Mac mini. Each file's header says how to rerun it.
 
 ## Commits, branches, and pull requests
 

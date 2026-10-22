@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Keeps the reverse tunnel from buddy-root's Docker bridge (172.17.0.1:11434) to this
+  Mac mini's Ollama (127.0.0.1:11434) open, so call.budddy.app's server reaches Gemma.
+  Only the tunnel: Ollama itself still runs from SSH (CLAUDE.md, Environment).
+
+  cp deploy/macmini/app.budddy.callguard.tunnel.plist ~/Library/LaunchAgents/
+  launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/app.budddy.callguard.tunnel.plist
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>app.budddy.callguard.tunnel</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/ssh</string>
+    <string>-N</string>
+    <string>-i</string>
+    <string>~/.ssh/callguard_tunnel</string>
+    <string>-o</string>
+    <string>IdentitiesOnly=yes</string>
+    <string>-o</string>
+    <string>BatchMode=yes</string>
+    <string>-o</string>
+    <string>ExitOnForwardFailure=yes</string>
+    <string>-o</string>
+    <string>ServerAliveInterval=30</string>
+    <string>-o</string>
+    <string>ServerAliveCountMax=3</string>
+    <string>-R</string>
+    <string>172.17.0.1:11434:127.0.0.1:11434</string>
+    <string>callguard@172.93.188.17</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>ThrottleInterval</key>
+  <integer>10</integer>
+  <key>StandardErrorPath</key>
+  <string>/tmp/callguard-tunnel.log</string>
+</dict>
+</plist>

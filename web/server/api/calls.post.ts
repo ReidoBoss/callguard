@@ -10,12 +10,16 @@ export default defineEventHandler(async (event) => {
   }
 
   const id = crypto.randomUUID()
+  // Keep #8's demo results with the review so every view reads the same saved data.
+  const initialReview = answerKeyFor(transcript)
   const review: CallReviewRecord = {
     id,
     transcript,
-    score: isJsonValue(body?.score) ? body.score : null,
-    flags: Array.isArray(body?.flags) && body.flags.every(isJsonValue) ? body.flags : [],
-    coaching: isJsonValue(body?.coaching) ? body.coaching : [],
+    score: isJsonValue(body?.score) ? body.score : isJsonValue(initialReview?.score) ? initialReview.score : null,
+    flags: Array.isArray(body?.flags) && body.flags.every(isJsonValue)
+      ? body.flags
+      : initialReview?.flags.flags ?? [],
+    coaching: isJsonValue(body?.coaching) ? body.coaching : isJsonValue(initialReview?.coaching) ? initialReview.coaching : [],
     agent: typeof body?.agent === 'string' && body.agent.trim()
       ? body.agent.trim()
       : agentFromTranscript(transcript),

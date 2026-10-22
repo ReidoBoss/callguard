@@ -1,0 +1,22 @@
+# Runs beside budddy-staging on buddy-root and joins its network, so budddy's Caddy
+# serves https://call.budddy.app with `reverse_proxy callguard:3000`.
+name: callguard
+
+services:
+  callguard:
+    build: .
+    image: callguard:latest
+    container_name: callguard
+    restart: unless-stopped
+    environment:
+      # The Mac mini's reverse SSH tunnel listens on the Docker bridge (172.17.0.1) only
+      NUXT_GEMMA_BASE_URL: http://host.docker.internal:11434/v1
+      NUXT_GEMMA_MODEL: gemma4:e4b
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks: [budddy]
+
+networks:
+  budddy:
+    name: budddy-staging_default
+    external: true

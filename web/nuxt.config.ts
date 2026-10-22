@@ -5,6 +5,11 @@ export default defineNuxtConfig({
   modules: ['@nuxt/eslint', 'shadcn-nuxt'],
   devtools: { enabled: true },
   css: ['~/assets/css/tailwind.css'],
+  // Server-only: local whisper.cpp binary and model for transcription (#28), from web/.env
+  runtimeConfig: {
+    whisperCli: process.env.WHISPER_CLI ?? '',
+    whisperModel: process.env.WHISPER_MODEL ?? '',
+  },
   compatibilityDate: '2025-07-15',
   nitro: {
     storage: {
