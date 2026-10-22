@@ -6,6 +6,11 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   css: ['~/assets/css/tailwind.css'],
   compatibilityDate: '2025-07-15',
+  nitro: {
+    // The demo calls from #3, bundled so the server can read them as `assets:calls`.
+    // `dir` is relative to web/server/
+    serverAssets: [{ baseName: 'calls', dir: '../../demo/calls' }],
+  },
   vite: {
     plugins: [tailwindcss()],
   },
