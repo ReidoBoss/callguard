@@ -20,6 +20,11 @@ export default defineNuxtConfig({
         driver: 'fs',
         base: '.data/calls',
       },
+      // The Settings page's checklist and rules (#17)
+      settings: {
+        driver: 'fs',
+        base: '.data/settings',
+      },
     },
     // The demo calls from #3, bundled so the server can read them as `assets:calls`.
     // `dir` is relative to web/server/
