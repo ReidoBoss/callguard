@@ -1,5 +1,8 @@
+import { agentFromTranscript, isJsonValue } from '#shared/calls'
+import type { CallReviewRecord } from '#shared/calls'
+
 export default defineEventHandler(async (event) => {
-  const body = await readBody<{ transcript?: unknown }>(event)
+  const body = await readBody<Record<string, unknown> | null>(event)
   const transcript = typeof body?.transcript === 'string' ? body.transcript.trim() : ''
 
   if (!transcript) {
@@ -7,6 +10,22 @@ export default defineEventHandler(async (event) => {
   }
 
   const id = crypto.randomUUID()
-  calls.set(id, { id, transcript, createdAt: new Date().toISOString() })
+  // Keep #8's demo results with the review so every view reads the same saved data.
+  const initialReview = answerKeyFor(transcript)
+  const review: CallReviewRecord = {
+    id,
+    transcript,
+    score: isJsonValue(body?.score) ? body.score : isJsonValue(initialReview?.score) ? initialReview.score : null,
+    flags: Array.isArray(body?.flags) && body.flags.every(isJsonValue)
+      ? body.flags
+      : initialReview?.flags.flags ?? [],
+    coaching: isJsonValue(body?.coaching) ? body.coaching : isJsonValue(initialReview?.coaching) ? initialReview.coaching : [],
+    agent: typeof body?.agent === 'string' && body.agent.trim()
+      ? body.agent.trim()
+      : agentFromTranscript(transcript),
+    createdAt: new Date().toISOString(),
+  }
+
+  await useStorage<CallReviewRecord>('calls').setItem(id, review)
   return { id }
 })

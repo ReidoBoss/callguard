@@ -13,7 +13,7 @@ const { data: coaching, pending: coachingPending, status: coachingStatus } = use
 const header = computed(() => {
   const text = call.value?.transcript ?? ''
   const field = (name: string) => text.match(new RegExp(`^${name}:\\s*(.+)$`, 'm'))?.[1]?.trim()
-  return { call: field('CALL'), agent: field('AGENT'), caller: field('CALLER'), duration: field('DURATION') }
+  return { call: field('CALL'), agent: call.value?.agent ?? field('AGENT'), caller: field('CALLER'), duration: field('DURATION') }
 })
 
 // `[01:05] AGENT: …` lines. Anything else (the header, pasted text without timestamps) is skipped
@@ -132,6 +132,7 @@ function printReport() {
       <p class="text-xs text-neutral-600">Processed on our own Gemma server. No call data left our hardware.</p>
     </article>
 
+    <NuxtLink to="/calls" class="text-muted-foreground hover:text-foreground text-sm print:hidden">← All calls</NuxtLink>
     <div class="flex flex-wrap items-start justify-between gap-4 print:hidden">
       <div>
         <h1 class="text-2xl font-semibold">
@@ -154,7 +155,7 @@ function printReport() {
     </div>
 
     <p v-if="error" class="text-destructive print:hidden" role="alert">
-      This call isn't here. Calls are kept in memory, so a server restart clears them.
+      This saved call report couldn't be found.
       <NuxtLink to="/" class="underline">Review it again</NuxtLink>
     </p>
 

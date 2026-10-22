@@ -23,7 +23,7 @@ locally. See **Deploy**.
 | `demo/` | Plain text | The demo calls, the script checklist and the answer key (#3): what each AI feature should return. The app reads them from here |
 | `web/server/` | Nitro (Nuxt's server) | The only code that talks to Gemma. The browser never calls the endpoint directly |
 | `deploy/` | Docker, shell, launchd | How `main` reaches https://call.budddy.app, see **Deploy** |
-| Transcription | Not decided | Gemma 4 audio input if our Ollama endpoint accepts it, otherwise a local whisper.cpp CLI called from a server route, otherwise pasted transcripts. Decide after probing the endpoint (`/gemma`) |
+| Transcription | whisper.cpp (#28) | A local whisper.cpp CLI called from a server route, for its real segment timestamps. Fallback: Gemma's `input_audio` transcribes accurately but invents the timestamps (probed in #2, see `/gemma`). Last resort: pasted transcripts |
 
 The root holds only husky and commitlint. `pnpm install` at the root does not install
 `web/`'s dependencies; install from inside `web/`.
