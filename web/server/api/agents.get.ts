@@ -14,7 +14,7 @@ export default defineEventHandler(async () => {
       id: call.id,
       createdAt: call.createdAt,
       score: getOverallScore(call.score),
-      highFlags: getHighSeverityFlagCount(call.flags),
+      highFlags: getHighSeverityFlagCount(call.flags, call.decisions),
     }
     byAgent.set(agent, [...(byAgent.get(agent) ?? []), row])
   }
