@@ -38,6 +38,11 @@ What a correct run of #4 and #5 returns on each call. Use it to check prompts, a
 | `01-good.txt` | Mae | pass | pass | pass | pass | pass | pass | none |
 | `02-sloppy.txt` | Jomar | pass | **fail** | **fail** | pass | **fail** | pass | `no_disclosure` [00:12], `unverified_access` [00:31] |
 | `03-risky.txt` | Kevin | pass | pass | pass | pass | pass | **fail** | `pan_spoken` [01:05], `unauthorized_promise` [01:48], `rude_or_dismissive` [00:52] |
+| `04-taglish.txt` | Joy | pass | pass | pass | pass | **fail** | pass | `unauthorized_promise` [01:19] |
 
 Call 3 is the demo's centrepiece: it passes most of the script, so a 2% spot check by
 score alone would miss it, but it holds the two most serious problems.
+
+Call 4 is in Taglish, with some Cebuano-English from the caller: the calls our agents in
+Cebu actually take (#18). It scores and flags like any other call. A flag's evidence quote
+stays in the call's own words; coaching notes are always in English.
