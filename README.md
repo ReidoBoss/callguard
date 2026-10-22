@@ -46,8 +46,8 @@ You need Node, [pnpm](https://pnpm.io) and an SSH login to the Mac mini (the `pe
 and `macmini` entries in `~/.ssh/config`).
 
 ```sh
-git clone https://github.com/ReidoBoss/callguard.git
-cd callguard
+git clone https://github.com/ReidoBoss/callguard.git call-buddy
+cd call-buddy
 pnpm install                 # git hooks only
 cd web && pnpm install       # the app
 
