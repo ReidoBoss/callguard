@@ -3,7 +3,7 @@
 const { data: samples } = await useFetch('/api/samples')
 
 const transcript = ref('')
-const audioName = ref<string | null>(null)
+const audio = ref<File | null>(null)
 const loadingSample = ref<string | null>(null)
 const submitting = ref(false)
 const error = ref<string | null>(null)
@@ -11,6 +11,7 @@ const error = ref<string | null>(null)
 async function loadSample(id: string) {
   loadingSample.value = id
   error.value = null
+  audio.value = null
   try {
     const sample = await $fetch(`/api/samples/${id}`)
     transcript.value = sample.transcript
@@ -23,9 +24,9 @@ async function loadSample(id: string) {
   }
 }
 
-// Audio needs #9's transcription, so for now a picked file is only acknowledged
+// A picked recording swaps the form for its transcription progress and editor (#29)
 function pickAudio(event: Event) {
-  audioName.value = (event.target as HTMLInputElement).files?.[0]?.name ?? null
+  audio.value = (event.target as HTMLInputElement).files?.[0] ?? null
 }
 
 async function submit() {
@@ -52,7 +53,9 @@ async function submit() {
         </p>
       </header>
 
-      <form class="space-y-6" @submit.prevent="submit">
+      <RecordingReview v-if="audio" :file="audio" @cancel="audio = null" />
+
+      <form v-else class="space-y-6" @submit.prevent="submit">
         <label class="block space-y-2">
           <span class="text-sm font-medium">Transcript</span>
           <textarea
@@ -68,18 +71,13 @@ async function submit() {
           <span class="text-sm font-medium">Recording</span>
           <input
             type="file"
-            accept="audio/*"
+            accept=".wav,.mp3,.m4a,audio/wav,audio/mpeg,audio/mp4"
             class="file:bg-secondary file:text-secondary-foreground block w-full text-sm file:mr-3 file:rounded-md file:border-0 file:px-3 file:py-2"
             :disabled="submitting"
             @change="pickAudio"
           >
           <p class="text-muted-foreground text-sm">
-            <template v-if="audioName">
-              {{ audioName }} can't be reviewed yet: audio upload isn't ready, so paste its transcript instead.
-            </template>
-            <template v-else>
-              Transcripts only for now. Audio upload is coming.
-            </template>
+            WAV, MP3 or M4A. It's transcribed on this machine, then you can fix the transcript before review.
           </p>
         </div>
 
