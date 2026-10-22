@@ -1,5 +1,5 @@
-// Shortcut: the report's flags and coaching, hand-copied from demo/checklist.md's answer key
-// until #5 (flags) and #6 (coaching) return the same shapes from Gemma
+// Shortcut: the report's flags, hand-copied from demo/checklist.md's answer key until #5
+// returns the same shape from Gemma
 import type { CallReviewRecord } from '#shared/calls'
 
 export type Severity = 'high' | 'medium' | 'low'
@@ -20,16 +20,9 @@ export interface CoachingResult {
   notes: { text: string, line: string | null }[]
 }
 
-const answerKey: Record<string, { flags: FlagsResult, coaching: CoachingResult }> = {
+const answerKey: Record<string, { flags: FlagsResult }> = {
   '01-good': {
     flags: { reviewed: true, flags: [] },
-    coaching: {
-      reviewed: true,
-      notes: [
-        { text: 'A model call: you disclosed the recording, verified two details and recapped every next step with timelines.', line: '01:45' },
-        { text: 'Offering to block the card before the caller asked was a great call. Keep doing that.', line: '01:19' },
-      ],
-    },
   },
   '02-sloppy': {
     flags: {
@@ -37,14 +30,6 @@ const answerKey: Record<string, { flags: FlagsResult, coaching: CoachingResult }
       flags: [
         { rule: 'no_disclosure', severity: 'medium', line: '00:12', quote: 'Okay sir, let me check that for you. What\'s the name on the account?' },
         { rule: 'unverified_access', severity: 'high', line: '00:31', quote: 'Okay Mr. Simmons, I can see your account. Your current balance is…' },
-      ],
-    },
-    coaching: {
-      reviewed: true,
-      notes: [
-        { text: 'Nice, warm greeting with the company name and your own name.', line: '00:00' },
-        { text: 'Tell the caller the call is recorded before you open the account.', line: '00:12' },
-        { text: 'Verify a second detail, like date of birth or the last four of the card, before reading out the balance.', line: '00:31' },
       ],
     },
   },
@@ -55,14 +40,6 @@ const answerKey: Record<string, { flags: FlagsResult, coaching: CoachingResult }
         { rule: 'rude_or_dismissive', severity: 'low', line: '00:52', quote: 'Ma\'am, the system says sixteenth. You probably did it late at night.' },
         { rule: 'pan_spoken', severity: 'high', line: '01:05', quote: 'Let me read the card back… **** 1111, expiring **/**.' },
         { rule: 'unauthorized_promise', severity: 'medium', line: '01:48', quote: 'I\'ll just refund the thirty-five dollars and I\'ll also waive your annual fee for next year.' },
-      ],
-    },
-    coaching: {
-      reviewed: true,
-      notes: [
-        { text: 'Solid verification: name, ZIP and date of birth before touching the account.', line: '00:32' },
-        { text: 'Never read a full card number aloud. Confirm the last four digits only.', line: '01:05' },
-        { text: 'Refunds and fee waivers need approval: say you\'ll request one, not that it\'s done.', line: '01:48' },
       ],
     },
   },

@@ -8,7 +8,8 @@ const id = useRoute().params.id as string
 const { data: call, error } = await useFetch(`/api/calls/${id}`)
 const { data: score, status: scoreStatus } = useLazyFetch(`/api/calls/${id}/score`, { server: false })
 const { data: flagged, status: flagsStatus } = useLazyFetch(`/api/calls/${id}/flags`, { server: false })
-const { data: coaching, status: coachingStatus } = useLazyFetch(`/api/calls/${id}/coaching`, { server: false })
+// Coaching reads the score and flags, so it waits for them: scoring the call twice at once would make both wait on Gemma
+const { data: coaching, status: coachingStatus, execute: fetchCoaching } = useLazyFetch(`/api/calls/${id}/coaching`, { server: false, immediate: false })
 
 // `status`, not `pending`: these fetch on the client only, so the server sees `idle` while hydration
 // sees `pending`. Counting `idle` as loading renders the same loading text on both (#48)
@@ -16,6 +17,9 @@ const loading = (status: { value: string }) => computed(() => status.value === '
 const scorePending = loading(scoreStatus)
 const flagsPending = loading(flagsStatus)
 const coachingPending = loading(coachingStatus)
+watch([scorePending, flagsPending], ([scoring, flagging]) => {
+  if (!scoring && !flagging) fetchCoaching()
+}, { immediate: true })
 
 const header = computed(() => {
   const text = call.value?.transcript ?? ''
@@ -204,7 +208,7 @@ function printReport() {
           <p v-else-if="!coaching?.reviewed" class="text-muted-foreground text-sm">No coaching notes yet.</p>
           <ol v-else class="space-y-3">
             <li v-for="(note, index) in coaching.notes" :key="index" class="text-sm">
-              <p>{{ note.text }}</p>
+              <p>{{ maskCardNumbers(note.text) }}</p>
               <button
                 v-if="note.line"
                 type="button"
