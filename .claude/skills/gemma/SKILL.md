@@ -1,17 +1,19 @@
 ---
 name: gemma
-description: How CallGuard calls ALMA's local Gemma 4 endpoint, probing what it supports, server-side calls from Nitro, and prompts that return strict JSON. Use whenever writing, changing or debugging code or prompts that talk to Gemma, or when the user types /gemma to probe the endpoint.
+description: How CallGuard calls its Gemma 4 endpoint (Ollama on our Mac mini, through an SSH tunnel), probing what it supports, server-side calls from Nitro, and prompts that return strict JSON. Use whenever writing, changing or debugging code or prompts that talk to Gemma, or when the user types /gemma to probe the endpoint.
 argument-hint: "[probe]"
 ---
 
-# Gemma on ALMA's endpoint
+# Gemma on our Mac mini
 
 CLAUDE.md's first rule holds here: call data goes to this endpoint and nowhere else.
 
-The endpoint details arrive from ALMA before the event. This skill assumes an
-OpenAI-compatible API (`/v1/models`, `/v1/chat/completions`), which is what vLLM, Ollama
-and llama.cpp servers all expose. **If the probe below says otherwise, update this file
-first**, so every teammate's agent stops assuming it.
+Gemma 4 runs in Ollama on the Mac mini, so it never leaves our hardware. The laptop
+reaches it through the SSH tunnel in CLAUDE.md's **Environment**; start that first, or
+every call below fails with "connection refused". Ollama exposes an OpenAI-compatible API
+(`/v1/models`, `/v1/chat/completions`). **If the probe below says otherwise, update this
+file first**, so every teammate's agent stops assuming it. Never use a `:cloud` tag: it
+runs on Ollama's servers.
 
 ## Probe (run once, at the start of the day)
 
