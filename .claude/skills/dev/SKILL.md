@@ -17,8 +17,10 @@ test -f web/.env && grep -cE '^GEMMA_(BASE_URL|MODEL)=.+' web/.env
 
 - **3000 is taken:** `curl -s localhost:3000` to see if it's this app, and reuse it. Never
   kill a process you didn't start; ask.
-- **No `web/.env` or fewer than 2 lines:** ask the user for ALMA's endpoint and model.
-  Don't make one up. Without it the app starts but every AI call fails, so say so.
+- **No `web/.env` or fewer than 2 lines:** write the two lines from CLAUDE.md's
+  **Environment**, then `curl -s localhost:11434/v1/models`. No answer means the tunnel is
+  down: start it from the same section. Without it the app starts but every AI call fails,
+  so say so.
 
 ## 2. Start it
 

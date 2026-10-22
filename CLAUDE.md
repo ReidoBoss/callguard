@@ -1,12 +1,12 @@
 # CallGuard
 
-Call-center QA that never leaves the building. CallGuard reads call recordings or
+Call-center QA that never leaves our hardware. CallGuard reads call recordings or
 transcripts, scores each agent against a script checklist (greeting, identity check,
 required disclosures), flags compliance risks such as a full card number read aloud, and
 drafts coaching notes. Built in one day at FUTURE FORGE: The ALMA Hackathon (2026-10-22,
-10 AM to 6 PM, Cebu) on ALMA's local Gemma 4 endpoint.
+10 AM to 6 PM, Cebu) on Gemma 4, served by Ollama from our own Mac mini.
 
-**The pitch is privacy, so the code has to keep it.** Call data goes to the ALMA Gemma
+**The pitch is privacy, so the code has to keep it.** Call data goes to our Gemma
 endpoint and nowhere else: no OpenAI, Anthropic, Google or other hosted AI API, no
 third-party transcription service, no analytics. A feature that needs an outside API is
 asked about first, because it breaks the demo's whole argument.
@@ -16,7 +16,7 @@ asked about first, because it breaks the demo's whole argument.
 | `web/` | Nuxt 4, Tailwind 4, shadcn-vue | The whole app. UI in `web/app/`, Nitro server routes in `web/server/api/` call Gemma. Its own pnpm project. Not scaffolded yet, see **Day one** |
 | `demo/` | Plain text | The demo calls, the script checklist and the answer key (#3): what each AI feature should return. The app reads them from here |
 | `web/server/` | Nitro (Nuxt's server) | The only code that talks to Gemma. The browser never calls the endpoint directly |
-| Transcription | Not decided | Gemma 4 audio input if ALMA's endpoint accepts it, otherwise a local whisper.cpp CLI called from a server route, otherwise pasted transcripts. Decide after probing the endpoint (`/gemma`) |
+| Transcription | Not decided | Gemma 4 audio input if our Ollama endpoint accepts it, otherwise a local whisper.cpp CLI called from a server route, otherwise pasted transcripts. Decide after probing the endpoint (`/gemma`) |
 
 The root holds only husky and commitlint. `pnpm install` at the root does not install
 `web/`'s dependencies; install from inside `web/`.
@@ -50,12 +50,42 @@ cd web && pnpm exec nuxi typecheck   # the only thing that checks types
 
 ## Environment
 
-`web/.env` (gitignored) holds the endpoint ALMA hands out before the event:
+Gemma 4 runs in Ollama on the Mac mini, bound to `127.0.0.1:11434` only, so nothing is
+exposed to the internet. The laptop reaches it through an SSH tunnel that hops via the VPS;
+`personal-vps` and `macmini` are `~/.ssh/config` entries. The VPS only relays the
+encrypted SSH stream, so it never sees call data.
+
+The models live on the Mac mini's external drive (`~/.ollama/models` links to
+`/Volumes/Dev/ollama/models`). A launchd service can't read that drive until someone
+clicks Allow on the Mac mini's screen, so Ollama runs from SSH instead and doesn't come
+back after a reboot. A shortcut. Start it when `curl` below gets no answer:
 
 ```sh
-GEMMA_BASE_URL=http://<alma-host>/v1   # OpenAI-compatible base URL, ends in /v1
-GEMMA_MODEL=<model id from GET /v1/models>
+ssh -J personal-vps macmini 'pgrep -f "ollama serve" || OLLAMA_HOST=127.0.0.1:11434 \
+  OLLAMA_KEEP_ALIVE=-1 OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 nohup \
+  /opt/homebrew/opt/ollama/bin/ollama serve > /Volumes/Dev/ollama/serve.log 2>&1 < /dev/null &'
 ```
+
+`OLLAMA_KEEP_ALIVE=-1` keeps a model in memory once loaded, because the first load from
+the USB drive takes minutes. Load one before the demo with a throwaway prompt.
+
+Start the tunnel, or restart it when it drops:
+
+```sh
+pkill -f 'L 11434:localhost:11434'   # only when restarting a dead tunnel
+ssh -f -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 \
+  -L 11434:localhost:11434 -J personal-vps macmini
+curl -s localhost:11434/v1/models    # answers once the tunnel is up
+```
+
+`web/.env` (gitignored) points at the tunnel's end:
+
+```sh
+GEMMA_BASE_URL=http://localhost:11434/v1   # OpenAI-compatible base URL, ends in /v1
+GEMMA_MODEL=gemma4:e4b                     # or gemma4:12b: slower, and only one fits in RAM at a time
+```
+
+Never a `:cloud` tag (`gemma4:cloud`, `gemma4:31b-cloud`): those run on Ollama's servers.
 
 Read them through `useRuntimeConfig()` on the server, never `NUXT_PUBLIC_*`, so the
 endpoint isn't shipped to the browser. How to call it is in `.claude/skills/gemma/`.
@@ -82,7 +112,7 @@ Never `--no-verify`.
 ## Ask before doing
 
 - **Dependencies.** A new entry in any `package.json`. Propose it and wait.
-- **External services.** Anything that sends data off the machine or off ALMA's endpoint.
+- **External services.** Anything that sends data off the machine or off our Gemma endpoint.
 - **Git.** Never commit, branch, push or open a PR unless told to.
 - **AI instructions.** `CLAUDE.md`, `AGENTS.md` and `.claude/**`: ask what they leave
   open, with AskUserQuestion, before pushing a change to them.
