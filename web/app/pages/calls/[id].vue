@@ -22,6 +22,11 @@ const lines = computed(() => (call.value?.transcript ?? '').split(/\r?\n/).flatM
   return match ? [{ time: match[1]!, speaker: match[2]!, text: match[3]! }] : []
 }))
 
+// Highest severity first, then by line, so the riskiest finding is the first one read (#47)
+const severityRank: Record<string, number> = { high: 0, medium: 1, low: 2 }
+const sortedFlags = computed(() => [...(flagged.value?.flags ?? [])].sort((a, b) =>
+  (severityRank[a.severity] ?? 3) - (severityRank[b.severity] ?? 3) || a.line.localeCompare(b.line, undefined, { numeric: true })))
+
 const flagsByLine = computed(() => new Map((flagged.value?.flags ?? []).map(flag => [flag.line, flag])))
 
 const severityRow: Record<string, string> = {
@@ -92,7 +97,7 @@ function printReport() {
         <h2 class="mb-2 font-bold">Compliance flags</h2>
         <table v-if="flagged?.flags.length" class="w-full border-t border-neutral-300">
           <tbody>
-            <tr v-for="flag in flagged.flags" :key="flag.line + flag.rule" class="border-b border-neutral-300 align-top">
+            <tr v-for="flag in sortedFlags" :key="flag.line + flag.rule" class="border-b border-neutral-300 align-top">
               <td class="py-2 pr-3 font-bold uppercase">{{ flag.severity }}</td>
               <td class="py-2 pr-3 font-mono">{{ flag.line }}</td>
               <td class="py-2">
@@ -214,7 +219,7 @@ function printReport() {
         </div>
 
         <ul v-if="flagged?.flags.length" class="flex flex-wrap gap-2">
-          <li v-for="flag in flagged.flags" :key="flag.line + flag.rule">
+          <li v-for="flag in sortedFlags" :key="flag.line + flag.rule">
             <button
               type="button"
               :class="severityPill[flag.severity]"
