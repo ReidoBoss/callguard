@@ -7,6 +7,8 @@ const system = `You label who speaks each line of a recorded call between a call
 
 Use the context: the agent answers with the company name and their own name, asks verification questions (full name, date of birth, last four digits of the card, ZIP code), looks up the account, reads policy, explains next steps and closes the call. The caller describes their problem, answers the verification questions and gives their own details. Calls usually alternate speakers, but not always: one person can say two lines in a row.
 
+Only the agent can see the account, so a line that reports what the system or account shows ("I see a payment posted", "the system says"), reads card or account details back or says it's about to ("let me read the card back"), or offers or refuses a refund or fee waiver is the AGENT, even when it argues with or blames the caller. A line addressing the other person as ma'am or sir is the AGENT; the transcript may spell it "Mom" or "Man". The caller says what they did ("I paid", "I made it on the 15th") and pushes back.
+
 If a line could have been said by either speaker and the lines around it don't settle it, label it UNKNOWN. Don't guess.
 
 The lines are numbered. Reply with only JSON, no prose, one entry per line in order, in exactly this shape:

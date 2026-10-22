@@ -21,9 +21,40 @@ export async function transcribeChunk(dir: string, chunk: Chunk): Promise<Segmen
   }
 
   const out = join(dir, chunk.file.replace(/\.wav$/, ''))
-  await runWhisper(whisperCli, ['-m', whisperModel, '-f', join(dir, chunk.file), '-l', 'en', '-np', '-oj', '-of', out])
+  const [silences] = await Promise.all([
+    findSilences(join(dir, chunk.file)),
+    runWhisper(whisperCli, ['-m', whisperModel, '-f', join(dir, chunk.file), '-l', 'en', '-np', '-oj', '-of', out]),
+  ])
   const { transcription } = JSON.parse(await readFile(`${out}.json`, 'utf8')) as { transcription: WhisperSegment[] }
-  return transcription.map(segment => ({ ms: chunk.startSec * 1000 + segment.offsets.from, text: segment.text }))
+  return transcription
+    // whisper invents "You" or "Thank you." in silence (#80): drop a segment that's mostly silent
+    .filter(({ offsets: { from, to } }) => {
+      const silent = silences.reduce((sum, [start, end]) => sum + Math.max(0, Math.min(to, end) - Math.max(from, start)), 0)
+      return silent < 0.8 * (to - from)
+    })
+    .map(segment => ({ ms: chunk.startSec * 1000 + segment.offsets.from, text: segment.text }))
+}
+
+// Silent stretches of a chunk as [startMs, endMs], from ffmpeg's silencedetect. A noisy line
+// has none, so nothing is dropped. An ffmpeg failure also returns none, never an error
+function findSilences(file: string) {
+  return new Promise<[number, number][]>((resolve) => {
+    const ffmpeg = spawn('ffmpeg', ['-hide_banner', '-nostats', '-i', file, '-af', 'silencedetect=noise=-45dB:d=1', '-f', 'null', '-'])
+    let stderr = ''
+    ffmpeg.stderr.on('data', (data) => { stderr += data })
+    ffmpeg.on('error', () => resolve([]))
+    ffmpeg.on('close', () => {
+      const silences: [number, number][] = []
+      let start: number | null = null
+      for (const [, kind, sec] of stderr.matchAll(/silence_(start|end): (-?[\d.]+)/g)) {
+        if (kind === 'start') start = Math.max(0, Number(sec) * 1000)
+        else if (start !== null) { silences.push([start, Number(sec) * 1000]); start = null }
+      }
+      // Silence that runs to the end of the chunk has a start but no end
+      if (start !== null) silences.push([start, Infinity])
+      resolve(silences)
+    })
+  })
 }
 
 // Transcribes each chunk in order and stitches the lines (see stitchSegments).
