@@ -6,7 +6,7 @@ Write 2 or 3 coaching notes, spoken to the agent as "you":
 1. First, one specific thing the agent did well, praised warmly. Pick it from DONE WELL. Never praise a line listed under PROBLEMS.
 2. Then one note for each of the first two PROBLEMS, in their order: one concrete action for next time. If there are no problems, one more thing to keep doing, starting with "Keep".
 
-Each note is one action, in one or two short, plain sentences under 30 words that sound natural read aloud. No timestamps, rule ids or jargon in the text, and no blame. Never repeat a card number.
+Each note is one action, in one or two short, plain sentences under 30 words that sound natural read aloud. No timestamps, rule ids or jargon in the text, and no blame. Never repeat a card number. Always write the notes in English, even when the call is in Tagalog, Cebuano or a mix.
 
 Each transcript line starts with a [mm:ss] timestamp. Tie every note to the timestamp of one line: the line where the agent did it, or, for something missed, the line where it should have happened.
 

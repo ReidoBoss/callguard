@@ -1,0 +1,23 @@
+CALL: 04-taglish
+AGENT: Joy
+CALLER: Rosario Dela Cruz
+DURATION: 01:55
+
+[00:00] AGENT: Good morning, thank you for calling Harbor Bay Credit Union card services, this is Joy. How can I help you today?
+[00:07] CALLER: Hello, Joy. Pwede bang mag-Tagalog na lang ako? I'm in Cebu right now, nagbabakasyon, and na-decline yung card ko sa mall kanina.
+[00:17] AGENT: Ay, okay lang po, ma'am, pwede po tayong mag-Tagalog. Para lang po alam ninyo, naka-record po ang tawag na ito for quality purposes. Bago ko po i-check ang account, pwede ko po bang makuha ang full name ninyo?
+[00:29] CALLER: Rosario Dela Cruz.
+[00:31] AGENT: Salamat po, Ms. Dela Cruz. At yung date of birth ninyo po, saka yung last four digits ng card?
+[00:37] CALLER: May twentieth, 1962. Yung last four, 4417.
+[00:43] AGENT: Thank you po, verified na po kayo. So para klaro po, na-decline yung card ninyo sa isang mall dito sa Cebu kanina, tama po ba?
+[00:51] CALLER: Oo, sa Ayala. Tapos nakita ko sa app, may mga foreign transaction fee pa, forty-two dollars lahat. Ang laki!
+[01:00] AGENT: Nakikita ko po dito, ma'am. Na-flag po ng fraud system yung transaction kasi wala pong travel notice sa account. Na-remove ko na po yung block, pwede na po ulit gamitin yung card.
+[01:12] CALLER: Ay, salamat. Pero yung fees? Taga-Cebu man gud ko, nag-uli lang ko diri. Unfair kaayo na.
+[01:19] AGENT: Ay, Bisaya diay ka, ma'am! Sige, ayaw na kabalaka. I-refund ko na lang lahat ng foreign transaction fees, yung forty-two dollars, wala na po kayong babayaran.
+[01:29] CALLER: Tinuod? Salamat kaayo, day!
+[01:32] AGENT: Para hindi na po maulit, mag-add po kayo ng travel notice sa app, under Card Settings, hanggang kailan po kayo dito sa Pilipinas.
+[01:40] CALLER: Hanggang December pa. Sige, gagawin ko mamaya.
+[01:44] AGENT: Okay na po yan, ma'am.
+[01:46] AGENT: May iba pa po ba akong maitutulong sa inyo?
+[01:49] CALLER: Wala na, okay na ako.
+[01:51] AGENT: Salamat po sa pagtawag sa Harbor Bay, Ms. Dela Cruz. Ingat po kayo diyan sa Cebu!
