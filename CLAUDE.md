@@ -13,25 +13,13 @@ asked about first, because it breaks the demo's whole argument.
 
 | Path | Stack | Notes |
 |---|---|---|
-| `web/` | Nuxt 4, Tailwind 4, shadcn-vue | The whole app. UI in `web/app/`, Nitro server routes in `web/server/api/` call Gemma. Its own pnpm project. Not scaffolded yet, see **Day one** |
+| `web/` | Nuxt 4, Tailwind 4, shadcn-vue | The whole app. UI in `web/app/`, Nitro server routes in `web/server/api/` call Gemma. Its own pnpm project |
 | `demo/` | Plain text | The demo calls, the script checklist and the answer key (#3): what each AI feature should return. The app reads them from here |
 | `web/server/` | Nitro (Nuxt's server) | The only code that talks to Gemma. The browser never calls the endpoint directly |
 | Transcription | Not decided | Gemma 4 audio input if ALMA's endpoint accepts it, otherwise a local whisper.cpp CLI called from a server route, otherwise pasted transcripts. Decide after probing the endpoint (`/gemma`) |
 
 The root holds only husky and commitlint. `pnpm install` at the root does not install
 `web/`'s dependencies; install from inside `web/`.
-
-## Day one
-
-The event rule is "bring an idea, not code", so the app is created on the day:
-
-```sh
-pnpm create nuxt@latest web          # pick pnpm, no git init (the repo already has one)
-cd web && pnpm dlx shadcn-vue@latest init
-```
-
-Then fill in **Commands** below with what `web/package.json` actually has, in the same
-commit.
 
 ## Package manager: pnpm only
 
@@ -46,6 +34,7 @@ cd web && pnpm install       # the app's own dependencies
 cd web && pnpm run dev       # http://localhost:3000
 cd web && pnpm run build     # SSR build and imports. Not types
 cd web && pnpm exec nuxi typecheck   # the only thing that checks types
+cd web && pnpm run lint      # eslint, @nuxt/eslint's config
 ```
 
 ## Environment
