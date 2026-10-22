@@ -29,7 +29,8 @@ function toggle(agent: string) {
             <th scope="col" class="px-4 py-3 font-medium">Agent</th>
             <th scope="col" class="px-4 py-3 text-right font-medium">Average score</th>
             <th scope="col" class="px-4 py-3 text-right font-medium">Calls</th>
-            <th scope="col" class="px-4 py-3 text-right font-medium">High-severity flags</th>
+            <th scope="col" class="px-4 py-3 text-right font-medium">Confirmed high flags</th>
+            <th scope="col" class="px-4 py-3 text-right font-medium">High flags waiting</th>
           </tr>
         </thead>
         <tbody>
@@ -48,8 +49,13 @@ function toggle(agent: string) {
             <td class="px-4 py-3 text-right tabular-nums">{{ row.averageScore === null ? '–' : `${row.averageScore}%` }}</td>
             <td class="px-4 py-3 text-right tabular-nums">{{ row.callCount }}</td>
             <td class="px-4 py-3 text-right tabular-nums">
-              <span :class="row.highFlags ? 'bg-red-600 text-white' : 'text-muted-foreground'" class="rounded-full px-2.5 py-0.5">
-                {{ row.highFlags }}
+              <span :class="row.highConfirmed ? 'bg-red-600 text-white' : 'text-muted-foreground'" class="rounded-full px-2.5 py-0.5">
+                {{ row.highConfirmed }}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-right tabular-nums">
+              <span :class="row.highWaiting ? 'bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200' : 'text-muted-foreground'" class="rounded-full px-2.5 py-0.5">
+                {{ row.highWaiting }}
               </span>
             </td>
           </tr>
@@ -64,7 +70,8 @@ function toggle(agent: string) {
               <span>{{ new Date(call.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
               <span class="text-muted-foreground flex gap-4 tabular-nums">
                 <span>{{ call.score === null ? 'not scored' : `${call.score}%` }}</span>
-                <span>{{ call.highFlags }} high</span>
+                <span>{{ call.highConfirmed }} high confirmed</span>
+                <span>{{ call.highWaiting }} high waiting</span>
                 <span aria-hidden="true">→</span>
               </span>
             </NuxtLink>

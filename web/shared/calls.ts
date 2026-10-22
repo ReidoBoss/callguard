@@ -35,7 +35,7 @@ export interface CallSummary {
   id: string
   agent: string
   score: number | null
-  highSeverityFlagCount: number
+  flagCounts: FlagDecisionCounts
   createdAt: string
 }
 
@@ -62,13 +62,29 @@ export function getOverallScore(score: JsonValue): number | null {
   return null
 }
 
-/** High-severity flags, leaving out any the QA lead dismissed (#21) */
-export function getHighSeverityFlagCount(flags: JsonValue[], decisions: CallReviewRecord['decisions'] = {}): number {
-  return flags.filter((flag) => {
-    if (!flag || typeof flag !== 'object' || Array.isArray(flag)) return false
-    if (decisions[storedFlagKey(flag) ?? '']?.status === 'dismissed') return false
-    return typeof flag.severity === 'string' && flag.severity.toLowerCase() === 'high'
-  }).length
+export interface FlagDecisionCounts {
+  confirmed: number
+  dismissed: number
+  waiting: number
+}
+
+/**
+ * Flags by the QA lead's decision (#21), counting the flags the report shows. A flag with
+ * no decision is waiting, so reviews saved before #21 count every flag as waiting.
+ */
+export function getFlagDecisionCounts(
+  flags: JsonValue[],
+  decisions: CallReviewRecord['decisions'] = {},
+  { highOnly = false } = {},
+): FlagDecisionCounts {
+  const counts = { confirmed: 0, dismissed: 0, waiting: 0 }
+  for (const flag of flags) {
+    if (!flag || typeof flag !== 'object' || Array.isArray(flag)) continue
+    const severity = typeof flag.severity === 'string' ? flag.severity.toLowerCase() : ''
+    if (highOnly ? severity !== 'high' : !['high', 'medium', 'low'].includes(severity)) continue
+    counts[decisions[storedFlagKey(flag) ?? '']?.status ?? 'waiting']++
+  }
+  return counts
 }
 
 export function toCallSummary(review: CallReviewRecord): CallSummary {
@@ -76,7 +92,7 @@ export function toCallSummary(review: CallReviewRecord): CallSummary {
     id: review.id,
     agent: review.agent,
     score: getOverallScore(review.score),
-    highSeverityFlagCount: getHighSeverityFlagCount(review.flags, review.decisions),
+    flagCounts: getFlagDecisionCounts(review.flags, review.decisions),
     createdAt: review.createdAt,
   }
 }

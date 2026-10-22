@@ -34,22 +34,31 @@ function formatDate(value: string) {
         No reviewed calls yet. Start a review to see it here.
       </p>
       <div v-else class="overflow-x-auto">
-        <div class="min-w-[38rem]">
-          <div class="text-muted-foreground grid grid-cols-[1.5fr_0.7fr_1fr_1.2fr] gap-4 border-b px-5 py-3 text-xs font-medium uppercase tracking-wide">
+        <div class="min-w-[46rem]">
+          <div class="text-muted-foreground grid grid-cols-[1.3fr_0.6fr_1.9fr_1.1fr] gap-4 border-b px-5 py-3 text-xs font-medium uppercase tracking-wide">
             <span>Agent</span>
             <span>Score</span>
-            <span>High severity flags</span>
+            <span>Flags</span>
             <span>Reviewed</span>
           </div>
           <ul>
             <li v-for="call in calls" :key="call.id" class="border-b last:border-b-0">
               <NuxtLink
                 :to="`/calls/${call.id}`"
-                class="hover:bg-accent/60 focus-visible:ring-ring grid grid-cols-[1.5fr_0.7fr_1fr_1.2fr] items-center gap-4 px-5 py-4 text-sm focus-visible:ring-2 focus-visible:outline-none"
+                class="hover:bg-accent/60 focus-visible:ring-ring grid grid-cols-[1.3fr_0.6fr_1.9fr_1.1fr] items-center gap-4 px-5 py-4 text-sm focus-visible:ring-2 focus-visible:outline-none"
               >
-                <span class="font-medium">{{ call.agent }}</span>
+                <span class="flex flex-wrap items-center gap-2 font-medium">
+                  {{ call.agent }}
+                  <span v-if="call.flagCounts.waiting" class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-900/40 dark:text-amber-200">
+                    Needs review
+                  </span>
+                </span>
                 <span>{{ formatScore(call.score) }}</span>
-                <span>{{ call.highSeverityFlagCount }}</span>
+                <span class="text-muted-foreground tabular-nums">
+                  <span class="text-foreground">{{ call.flagCounts.confirmed }}</span> confirmed ·
+                  {{ call.flagCounts.dismissed }} dismissed ·
+                  <span :class="call.flagCounts.waiting > 0 && 'font-medium text-amber-700 dark:text-amber-300'">{{ call.flagCounts.waiting }} waiting</span>
+                </span>
                 <time class="text-muted-foreground" :datetime="call.createdAt">{{ formatDate(call.createdAt) }}</time>
               </NuxtLink>
             </li>
