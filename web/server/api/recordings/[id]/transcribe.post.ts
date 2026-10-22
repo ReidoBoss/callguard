@@ -7,7 +7,9 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Recording not found' })
   })
 
+  const started = performance.now()
   const transcript = await transcribeChunks(dir, chunks)
-  logActivity({ kind: 'transcription', where: 'local', engine: 'whisper.cpp', recordingId: id })
+  // No network request: whisper.cpp runs here, so no bytes leave the machine
+  logActivity({ purpose: 'transcribe', host: 'this machine (whisper.cpp)', selfHosted: true, bytesSent: null, durationMs: Math.round(performance.now() - started), ok: true })
   return { id, transcript }
 })
