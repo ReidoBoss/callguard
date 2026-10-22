@@ -15,6 +15,17 @@ Reply with only JSON, no prose, in exactly this shape:
 
 const severityRank = { high: 0, medium: 1, low: 3 }
 
+// Gemma sometimes writes "at 01:45" or "[01:45]" into a note despite the prompt; the note's line already carries it
+function stripTimestamps(text: string) {
+  return text
+    .replace(/\s*(?:\bat\s+)?[[(]?\b(?:at\s+)?\d{1,2}:\d{2}[\])]?/gi, '')
+    .replace(/^[\s,;:]+/, '')
+    .replace(/\s+([.,;:!?])/g, '$1')
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+    .replace(/^./, first => first.toUpperCase())
+}
+
 export async function coachTranscript(transcript: string, score: ScoreResult['items'], flags: FlagsResult['flags']): Promise<CoachingResult> {
   // Sorted here, not by the model: high and medium flags, then failed checklist items, then low flags
   const problems = [
@@ -28,7 +39,7 @@ export async function coachTranscript(transcript: string, score: ScoreResult['it
   // Only lines that are really in the call, so "see 01:05" always scrolls somewhere
   const times = new Set(transcript.match(/(?<=^\[)\d{1,2}:\d{2}(?=\])/gm))
   const notes = (reply.notes ?? []).flatMap((note) => {
-    const text = note.text?.trim()
+    const text = note.text && stripTimestamps(note.text)
     const line = note.line?.replace(/[[\]]/g, '') ?? ''
     return text ? [{ text, line: times.has(line) ? line : null }] : []
   }).slice(0, 3)
